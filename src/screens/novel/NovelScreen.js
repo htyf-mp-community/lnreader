@@ -403,7 +403,7 @@ const Novel = ({ route, navigation }) => {
   }
   const headerStyle = {
     paddingRight: 102,
-    paddingTop: topInset,
+    paddingTop: topInset - 4,
     height: 50+topInset
   }
   return (
