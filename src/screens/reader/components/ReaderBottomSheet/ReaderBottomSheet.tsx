@@ -10,7 +10,7 @@ import color from 'color';
 
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 
-import { defaultTo } from 'lodash-es';
+import { defaultTo } from 'lodash';
 import BottomSheet from '@components/BottomSheet/BottomSheet';
 import { useAppDispatch, useSettingsV1 } from '../../../../redux/hooks';
 import { useTheme } from '@hooks/useTheme';

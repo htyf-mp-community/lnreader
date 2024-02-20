@@ -19,7 +19,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@redux/store';
 import { useAppDispatch } from '@redux/hooks';
 import { useTheme } from '@hooks/useTheme';
-import { noop } from 'lodash-es';
+import { noop } from 'lodash';
 
 import { defaultUserAgentString } from '@utils/fetch/fetch';
 

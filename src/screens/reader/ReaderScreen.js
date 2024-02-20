@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import { Dimensions, NativeModules, NativeEventEmitter } from 'react-native';
+import { Dimensions, NativeModules } from 'react-native';
 
 import VolumeButtonListener from './../../utils/volumeButtonListener';
 
@@ -38,7 +38,7 @@ import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import { useFullscreenMode, useLibrarySettings } from '../../hooks';
 import { getChapterFromDb } from '../../database/queries/DownloadQueries';
 import ReaderBottomSheetV2 from './components/ReaderBottomSheet/ReaderBottomSheet';
-import { defaultTo } from 'lodash-es';
+import { defaultTo } from 'lodash';
 import BottomInfoBar from './components/BottomInfoBar/BottomInfoBar';
 import { sanitizeChapterText } from './utils/sanitizeChapterText';
 import ChapterDrawer from './components/ChapterDrawer';
@@ -115,29 +115,31 @@ const ChapterContent = ({ route, navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState();
 
-  const emmiter = useRef(
-    new NativeEventEmitter(NativeModules.VolumeButtonListener),
-  );
+  // const emmiter = useRef(
+  //   new NativeEventEmitter(NativeModules.VolumeButtonListener),
+  // );
+
+  const emmiter = useRef();
 
   const connectVolumeButton = () => {
     VolumeButtonListener.connect();
     VolumeButtonListener.preventDefault();
-    emmiter.current.addListener('VolumeUp', e => {
-      webViewRef.current?.injectJavaScript(`(()=>{
-            window.scrollBy({top:${-defaultTo(
-              scrollAmount,
-              Dimensions.get('window').height,
-            )},behavior:'smooth',})
-          })()`);
-    });
-    emmiter.current.addListener('VolumeDown', e => {
-      webViewRef.current?.injectJavaScript(`(()=>{
-            window.scrollBy({top:${defaultTo(
-              scrollAmount,
-              Dimensions.get('window').height,
-            )},behavior:'smooth',})
-          })()`);
-    });
+    // emmiter.current.addListener('VolumeUp', e => {
+    //   webViewRef.current?.injectJavaScript(`(()=>{
+    //         window.scrollBy({top:${-defaultTo(
+    //           scrollAmount,
+    //           Dimensions.get('window').height,
+    //         )},behavior:'smooth',})
+    //       })()`);
+    // });
+    // emmiter.current.addListener('VolumeDown', e => {
+    //   webViewRef.current?.injectJavaScript(`(()=>{
+    //         window.scrollBy({top:${defaultTo(
+    //           scrollAmount,
+    //           Dimensions.get('window').height,
+    //         )},behavior:'smooth',})
+    //       })()`);
+    // });
   };
 
   useEffect(() => {
@@ -145,15 +147,15 @@ const ChapterContent = ({ route, navigation }) => {
       connectVolumeButton();
     } else {
       VolumeButtonListener.disconnect();
-      emmiter.current.removeAllListeners('VolumeUp');
-      emmiter.current.removeAllListeners('VolumeDown');
+      // emmiter.current.removeAllListeners('VolumeUp');
+      // emmiter.current.removeAllListeners('VolumeDown');
       // this is just for sure, without it app still works properly
     }
     return () => {
       VolumeButtonListener.disconnect();
-      emmiter.current.removeAllListeners('VolumeUp');
+      // emmiter.current.removeAllListeners('VolumeUp');
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      emmiter.current.removeAllListeners('VolumeDown');
+      // emmiter.current.removeAllListeners('VolumeDown');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useVolumeButtons, scrollAmount, chapter]);

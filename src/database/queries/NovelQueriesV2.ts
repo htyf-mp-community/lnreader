@@ -1,4 +1,4 @@
-import { noop, xor } from 'lodash-es';
+import { noop, xor } from 'lodash';
 
 import * as SQLite from 'expo-sqlite';
 const db = SQLite.openDatabase('lnreader.db');

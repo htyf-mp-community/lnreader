@@ -29,7 +29,7 @@ import {
 import { followNovel } from '../../database/queries/NovelQueries';
 import SetCategoryModal from '@screens/novel/components/SetCategoriesModal';
 import useBoolean from '@hooks/useBoolean';
-import { debounce, intersection } from 'lodash-es';
+import { debounce, intersection } from 'lodash';
 import { useBackHandler } from '@hooks/useBackHandler';
 import { getChapterScreenRouteParams } from '@utils/NavigationUtils';
 import useHistory from '@hooks/useHistory';

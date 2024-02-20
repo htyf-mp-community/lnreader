@@ -1,4 +1,5 @@
-import * as Linking from 'expo-linking';
+import {Linking} from 'react-native'
+// import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import qs from 'qs';
 import { MYANIMELIST_CLIENT_ID } from '@env';
@@ -10,7 +11,7 @@ const tokenUrl = 'https://myanimelist.net/v1/oauth2/token';
 const baseApiUrl = 'https://api.myanimelist.net/v2';
 const challenge = pkceChallenger();
 const authUrl = `${baseOAuthUrl}?response_type=code&client_id=${clientId}&code_challenge_method=plain&code_challenge=${challenge}`;
-const redirectUri = Linking.createURL('');
+const redirectUri = Linking?.createURL && Linking?.createURL('');
 export const malToNormalized: Record<string, UserListStatus> = {
   reading: 'CURRENT',
   completed: 'COMPLETED',

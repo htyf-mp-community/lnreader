@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import React from 'react';
 
-import { defaultTo } from 'lodash-es';
+import { defaultTo } from 'lodash';
 
 import { Button, List, SwitchItem } from '@components/index';
 

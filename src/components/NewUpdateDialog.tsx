@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { ScrollView, StyleSheet, View, Text, Dimensions } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, Dimensions, Linking } from 'react-native';
 import { Portal, Modal } from 'react-native-paper';
-import * as Linking from 'expo-linking';
+// import * as Linking from 'expo-linking';
 
 import { Button } from '@components';
 

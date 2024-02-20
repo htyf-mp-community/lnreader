@@ -1,4 +1,5 @@
-import * as Linking from 'expo-linking';
+import {Linking} from 'react-native'
+// import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { ANILIST_CLIENT_ID } from '@env';
 import {
@@ -10,7 +11,7 @@ import {
 const apiEndpoint = 'https://graphql.anilist.co';
 const clientId = ANILIST_CLIENT_ID;
 const authUrl = `https://anilist.co/api/v2/oauth/authorize?client_id=${clientId}&response_type=token`;
-const redirectUri = Linking.createURL('');
+const redirectUri = Linking?.createURL && Linking?.createURL('');
 const searchQuery = `query($search: String) {
   Page {
     media(search: $search, type: MANGA, format: NOVEL, sort: POPULARITY_DESC) {

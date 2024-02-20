@@ -13,7 +13,7 @@ import {
 import { FlatList } from 'react-native-gesture-handler';
 import { Button, IconButtonV2 } from '@components/index';
 import { Checkbox } from '@components/Checkbox/Checkbox';
-import { defaultTo } from 'lodash-es';
+import { defaultTo } from 'lodash';
 import { Picker } from '@react-native-picker/picker';
 import useBoolean from '@hooks/useBoolean';
 import { overlay } from 'react-native-paper';

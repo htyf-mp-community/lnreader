@@ -59,9 +59,10 @@ i18n.translations = {
   'zh-CN': zhCn,
   'zh-TW': zhTw,
 };
-i18n.locale = Localization.locale;
-dayjs.locale(Localization.locale);
-export const localization = Localization.locale;
+const __locale__ = 'zh-CN' || Localization.locale;
+i18n.locale = __locale__;
+dayjs.locale(__locale__);
+export const localization = __locale__;
 export const getString = (stringKey: keyof StringMap) => i18n.t(stringKey);
 
 dayjs.Ls[dayjs.locale()].calendar = {

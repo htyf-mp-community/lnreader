@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio';
 import { fetchApi, fetchHtml } from '@utils/fetch/fetch';
-import { defaultTo } from 'lodash-es';
+import { defaultTo } from 'lodash';
 import { SourceOptions } from '../sourceManager';
 import {
   SourceChapter,

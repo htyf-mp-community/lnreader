@@ -1,6 +1,6 @@
 import { fetchHtml } from '@utils/fetch/fetch';
 import * as cheerio from 'cheerio';
-import { startCase } from 'lodash-es';
+import { startCase } from 'lodash';
 
 const sourceId = 103;
 const sourceName = 'SakuraNovel';

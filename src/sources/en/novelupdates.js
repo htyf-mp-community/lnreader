@@ -5,7 +5,7 @@ import {
   cloudflareCheck,
   defaultUserAgentString,
 } from '@utils/fetch/fetch';
-import { defaultTo } from 'lodash-es';
+import { defaultTo } from 'lodash';
 import { FilterInputs } from '../types/filterTypes';
 
 const sourceId = 50;

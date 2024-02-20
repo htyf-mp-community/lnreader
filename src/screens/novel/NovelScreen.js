@@ -68,7 +68,7 @@ import { getChapterScreenRouteParams } from '../../utils/NavigationUtils';
 import NovelScreenLoading from './components/LoadingAnimation/NovelScreenLoading';
 import { useTrackerReducer } from '@redux/hooks';
 import EpubIconButton from './components/EpubIconButton';
-import { uniqBy } from 'lodash-es';
+import { uniqBy } from 'lodash';
 
 const Novel = ({ route, navigation }) => {
   const item = route.params;

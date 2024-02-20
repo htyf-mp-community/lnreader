@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio';
 import { fetchHtml } from '@utils/fetch/fetch';
-import { startCase } from 'lodash-es';
+import { startCase } from 'lodash';
 
 const sourceId = 87;
 const sourceName = 'IndoWebNovel';

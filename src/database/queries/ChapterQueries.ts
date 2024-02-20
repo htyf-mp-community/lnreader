@@ -4,7 +4,7 @@ import { sourceManager } from '../../sources/sourceManager';
 import { ChapterItem } from '../types';
 
 import * as cheerio from 'cheerio';
-import RNFetchBlob from 'rn-fetch-blob';
+import RNFetchBlob from 'react-native-blob-util';
 import { txnErrorCallback } from '@database/utils/helpers';
 
 const db = SQLite.openDatabase('lnreader.db');

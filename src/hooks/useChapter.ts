@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import sanitize from 'sanitize-html';
-import { defaultTo } from 'lodash-es';
+import { defaultTo } from 'lodash';
 import { getChapterFromDb } from '../database/queries/DownloadQueries';
 
 import { sourceManager } from '../sources/sourceManager';

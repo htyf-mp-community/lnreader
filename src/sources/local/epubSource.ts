@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import RNFS from 'react-native-fs';
+import * as RNFS from '@dr.pogodin/react-native-fs';
 import { htmlToText } from '../helpers/htmlToText';
 
 const sourceName = 'EPub';

@@ -55,7 +55,7 @@ const MainNavigator = () => {
   }, []);
 
   return (
-    <NavigationContainer theme={{ colors: theme }}>
+    <NavigationContainer independent theme={{ colors: theme }}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="BottomNavigator" component={BottomNavigator} />
         <Stack.Screen name="Novel" component={Novel} />
