@@ -40,7 +40,7 @@ const Searchbar: React.FC<SearcbarProps> = ({
   const focusSearchbar = () => searchbarRef.current.focus();
 
   const { top, right, left } = useSafeAreaInsets();
-  const marginTop = top;
+  const marginTop = top + 3;
   const marginRight = 102 + right + 16;
   const marginLeft = left + 16;
 

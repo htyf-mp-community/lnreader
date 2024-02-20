@@ -15,11 +15,11 @@ const Appbar: React.FC<AppbarProps> = ({
   title,
   handleGoBack,
   theme,
-  mode = 'large',
+  mode = 'small',
   children,
 }) => (
   <PaperAppbar.Header
-    style={{ backgroundColor: theme.surface, marginRight: 102 }}
+    style={{ backgroundColor: theme.surface, marginRight: 102, height: 48 }}
     statusBarHeight={StatusBar.currentHeight}
     mode={mode}
   >
