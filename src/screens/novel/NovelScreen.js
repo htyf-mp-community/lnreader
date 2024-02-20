@@ -401,13 +401,17 @@ const Novel = ({ route, navigation }) => {
   if (loading) {
     return <NovelScreenLoading theme={theme} />;
   }
-
+  const headerStyle = {
+    paddingRight: 102,
+    paddingTop: topInset,
+    height: 50+topInset
+  }
   return (
     <Provider>
       <View style={[styles.container, { backgroundColor: theme.background }]}>
         <Portal>
           {selected.length === 0 ? (
-            <Animated.View style={[styles.row, headerOpacityStyle]}>
+            <Animated.View style={[styles.row, headerOpacityStyle, headerStyle]}>
               <IconButton
                 icon="arrow-left"
                 iconColor={theme.onBackground}
@@ -629,6 +633,7 @@ const Novel = ({ route, navigation }) => {
                   backgroundColor: theme.surface2,
                 },
                 styles.animatedView,
+                headerStyle,
               ]}
             >
               <Appbar.Action

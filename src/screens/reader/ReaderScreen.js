@@ -146,13 +146,13 @@ const ChapterContent = ({ route, navigation }) => {
     if (useVolumeButtons) {
       connectVolumeButton();
     } else {
-      VolumeButtonListener.disconnect();
+      // VolumeButtonListener.disconnect();
       // emmiter.current.removeAllListeners('VolumeUp');
       // emmiter.current.removeAllListeners('VolumeDown');
       // this is just for sure, without it app still works properly
     }
     return () => {
-      VolumeButtonListener.disconnect();
+      // VolumeButtonListener.disconnect();
       // emmiter.current.removeAllListeners('VolumeUp');
       // eslint-disable-next-line react-hooks/exhaustive-deps
       // emmiter.current.removeAllListeners('VolumeDown');

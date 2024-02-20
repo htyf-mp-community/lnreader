@@ -98,6 +98,7 @@ const styles = StyleSheet.create({
   appbar: {
     backgroundColor: 'transparent',
     elevation: 0,
+    marginRight: 102,
   },
   bookmark: {
     marginRight: 4,

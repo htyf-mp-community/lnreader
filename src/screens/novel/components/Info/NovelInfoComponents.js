@@ -24,12 +24,12 @@ const NovelInfoContainer = ({ children }) => (
 );
 
 const CoverImage = ({ children, source, theme, hideBackdrop }) => {
-  const { colors, locations } = easeGradient({
-    colorStops: {
-      0: { color: 'rgba(0,0,0,0)' },
-      1: { color: theme.background },
-    },
-  });
+  // const { colors, locations } = easeGradient({
+  //   colorStops: {
+  //     0: { color: 'rgba(0,0,0,0)' },
+  //     1: { color: theme.background },
+  //   },
+  // });
 
   if (hideBackdrop) {
     return <View>{children}</View>;
@@ -42,7 +42,8 @@ const CoverImage = ({ children, source, theme, hideBackdrop }) => {
             backgroundColor: color(theme.background).alpha(0.7).string(),
           }}
         >
-          {source.uri ? (
+          {children}
+          {/* {source.uri ? (
             <LinearGradient
               colors={colors}
               locations={locations}
@@ -52,7 +53,7 @@ const CoverImage = ({ children, source, theme, hideBackdrop }) => {
             </LinearGradient>
           ) : (
             children
-          )}
+          )} */}
         </View>
       </FastImage>
     );
