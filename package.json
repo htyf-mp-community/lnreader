@@ -3,9 +3,13 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
+    "run:scripts": "node ./scripts/index.js",
+    "dgz": "npm run run:scripts && mini-apps-cli",
+    "dgz:init": "npm run run:scripts && mini-apps-cli --init",
+    "build:dgz": "npm run run:scripts && mini-apps-cli --build",
     "android": "react-native run-android --active-arch-only",
     "ios": "react-native run-ios",
-    "start": "react-native start",
+    "start": "concurrently \"react-native webpack-start --host 0.0.0.0 -- --reset-cache\"",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "prettier": "prettier --write \"./src/**/*.{js,jsx,ts,tsx}\"",
     "buildRelease": "cd android && ./gradlew clean && ./gradlew assembleRelease",
@@ -15,6 +19,7 @@
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^4.4.5",
+    "@hongtangyun/react-native-mini-apps-engines": "^0.15.19",
     "@react-native-community/slider": "4.4.2",
     "@react-native-google-signin/google-signin": "^11.0.0",
     "@react-native-picker/picker": "2.4.8",
