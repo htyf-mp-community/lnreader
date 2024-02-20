@@ -59,9 +59,10 @@ i18n.translations = {
   'zh-CN': zhCn,
   'zh-TW': zhTw,
 };
-i18n.locale = Localization.locale;
-dayjs.locale(Localization.locale);
-export const localization = Localization.locale;
+const locale = 'zh-CN' || Localization.locale
+i18n.locale = locale;
+dayjs.locale(locale);
+export const localization = locale;
 export const getString = (
   stringKey: keyof StringMap,
   options?: i18n.TranslateOptions,

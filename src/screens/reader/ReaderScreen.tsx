@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
-import VolumeButtonListener from '@native/volumeButtonListener';
+// import VolumeButtonListener from '@native/volumeButtonListener';
 
 import { useKeepAwake } from 'expo-keep-awake';
 
@@ -126,39 +126,39 @@ export const ChapterContent = ({
     ChapterInfo[]
   >([]);
 
-  const emmiter = useRef(new NativeEventEmitter(VolumeButtonListener));
+  // const emmiter = useRef(new NativeEventEmitter(VolumeButtonListener));
 
   const connectVolumeButton = () => {
-    VolumeButtonListener.connect();
-    VolumeButtonListener.preventDefault();
-    emmiter.current.addListener('VolumeUp', () => {
-      webViewRef.current?.injectJavaScript(`(()=>{
-          window.scrollBy({top:${-Dimensions.get('window')
-            .height},behavior:'smooth',})
-        })()`);
-    });
-    emmiter.current.addListener('VolumeDown', () => {
-      webViewRef.current?.injectJavaScript(`(()=>{
-          window.scrollBy({top:${
-            Dimensions.get('window').height
-          },behavior:'smooth',})
-        })()`);
-    });
+    // VolumeButtonListener.connect();
+    // VolumeButtonListener.preventDefault();
+    // emmiter.current.addListener('VolumeUp', () => {
+    //   webViewRef.current?.injectJavaScript(`(()=>{
+    //       window.scrollBy({top:${-Dimensions.get('window')
+    //         .height},behavior:'smooth',})
+    //     })()`);
+    // });
+    // emmiter.current.addListener('VolumeDown', () => {
+    //   webViewRef.current?.injectJavaScript(`(()=>{
+    //       window.scrollBy({top:${
+    //         Dimensions.get('window').height
+    //       },behavior:'smooth',})
+    //     })()`);
+    // });
   };
 
   useEffect(() => {
     if (useVolumeButtons) {
       connectVolumeButton();
     } else {
-      VolumeButtonListener.disconnect();
-      emmiter.current.removeAllListeners('VolumeUp');
-      emmiter.current.removeAllListeners('VolumeDown');
+      // VolumeButtonListener.disconnect();
+      // emmiter.current.removeAllListeners('VolumeUp');
+      // emmiter.current.removeAllListeners('VolumeDown');
       // this is just for sure, without it app still works properly
     }
     return () => {
-      VolumeButtonListener.disconnect();
-      emmiter.current.removeAllListeners('VolumeUp');
-      emmiter.current.removeAllListeners('VolumeDown');
+      // VolumeButtonListener.disconnect();
+      // emmiter.current.removeAllListeners('VolumeUp');
+      // emmiter.current.removeAllListeners('VolumeDown');
     };
   }, [useVolumeButtons, chapter]);
 

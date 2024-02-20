@@ -50,12 +50,12 @@ const CoverImage = ({
   theme,
   hideBackdrop,
 }: CoverImageProps) => {
-  const { colors, locations } = easeGradient({
-    colorStops: {
-      0: { color: 'rgba(0,0,0,0)' },
-      1: { color: theme.background },
-    },
-  });
+  // const { colors, locations } = easeGradient({
+  //   colorStops: {
+  //     0: { color: 'rgba(0,0,0,0)' },
+  //     1: { color: theme.background },
+  //   },
+  // });
 
   if (hideBackdrop) {
     return <View>{children}</View>;
@@ -68,7 +68,8 @@ const CoverImage = ({
             backgroundColor: color(theme.background).alpha(0.7).string(),
           }}
         >
-          {source.uri ? (
+          {children}
+          {/* {source.uri ? (
             <LinearGradient
               colors={colors}
               locations={locations}
@@ -78,7 +79,7 @@ const CoverImage = ({
             </LinearGradient>
           ) : (
             children
-          )}
+          )} */}
         </View>
       </ImageBackground>
     );
