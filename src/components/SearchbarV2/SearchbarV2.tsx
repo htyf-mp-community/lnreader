@@ -41,7 +41,7 @@ const Searchbar: React.FC<SearcbarProps> = ({
 
   const { top, right, left } = useSafeAreaInsets();
   const marginTop = top + 8;
-  const marginRight = right + 16;
+  const marginRight = 102 + right + 16;
   const marginLeft = left + 16;
 
   return (
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   searchbarContainer: {
     marginHorizontal: 16,
     marginBottom: 12,
-    minHeight: 56,
+    minHeight: 40,
     borderRadius: 50,
     overflow: 'hidden',
     zIndex: 1,
