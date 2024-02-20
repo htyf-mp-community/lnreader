@@ -26,7 +26,7 @@ import { fetchNovel, fetchPage } from '@services/plugin/fetch';
 import { showToast } from '@utils/showToast';
 import { useCallback, useEffect, useState } from 'react';
 import { NovelDownloadFolder } from '@utils/constants/download';
-import * as RNFS from 'react-native-fs';
+import * as RNFS from '@dr.pogodin/react-native-fs';
 import { getString } from '@strings/translations';
 import { ChapterItem } from '@plugins/types';
 

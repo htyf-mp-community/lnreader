@@ -2,7 +2,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { StorageAccessFramework } from 'expo-file-system';
 import * as Notifications from 'expo-notifications';
 import BackgroundService from 'react-native-background-actions';
-import RNFS from 'react-native-fs';
+import * as RNFS from '@dr.pogodin/react-native-fs';
 
 import { getPlugin } from '@plugins/pluginManager';
 import { restoreLibrary } from '@database/queries/NovelQueries';

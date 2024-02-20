@@ -10,7 +10,7 @@ import {
   NativeEventEmitter,
   DrawerLayoutAndroid,
 } from 'react-native';
-import * as RNFS from 'react-native-fs';
+import * as RNFS from '@dr.pogodin/react-native-fs';
 
 import VolumeButtonListener from '@native/volumeButtonListener';
 
@@ -41,7 +41,7 @@ import { insertHistory } from '@database/queries/HistoryQueries';
 import WebViewReader from './components/WebViewReader';
 import { useFullscreenMode, useTextToSpeech } from '@hooks';
 import ReaderBottomSheetV2 from './components/ReaderBottomSheet/ReaderBottomSheet';
-import { defaultTo } from 'lodash-es';
+import { defaultTo } from 'lodash';
 import BottomInfoBar from './components/BottomInfoBar/BottomInfoBar';
 import { sanitizeChapterText } from './utils/sanitizeChapterText';
 import ChapterDrawer from './components/ChapterDrawer';

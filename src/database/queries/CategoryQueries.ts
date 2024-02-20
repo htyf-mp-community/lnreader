@@ -1,5 +1,5 @@
 import * as SQLite from 'expo-sqlite';
-import { noop } from 'lodash-es';
+import { noop } from 'lodash';
 import { BackupCategory, Category, NovelCategory, CCategory } from '../types';
 import { showToast } from '@utils/showToast';
 import { txnErrorCallback } from '../utils/helpers';

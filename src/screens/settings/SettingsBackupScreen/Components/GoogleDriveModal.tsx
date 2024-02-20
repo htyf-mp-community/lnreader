@@ -2,11 +2,11 @@ import React from 'react';
 import { ThemeColors } from '@theme/types';
 import { StyleSheet, Text, View, Image } from 'react-native';
 import { Modal, TextInput, overlay } from 'react-native-paper';
-import { GoogleSignin, User } from '@react-native-google-signin/google-signin';
+// import { GoogleSignin, User } from '@react-native-google-signin/google-signin';
 import { useEffect, useState } from 'react';
 import { Button, EmptyView } from '@components';
 import { FlatList, TouchableOpacity } from 'react-native-gesture-handler';
-import * as Clipboard from 'expo-clipboard';
+import * as Clipboard from '@react-native-clipboard/clipboard';
 import { showToast } from '@utils/showToast';
 import { getString } from '@strings/translations';
 import { exists, getBackups, makeDir } from '@api/drive';
@@ -31,10 +31,10 @@ function Authorized({
   setUser: (user?: User) => void;
 }) {
   const signOut = () => {
-    GoogleSignin.signOut().then(() => {
-      setUser();
-      setBackupModal(BackupModal.UNAUTHORIZED);
-    });
+    // GoogleSignin.signOut().then(() => {
+    //   setUser();
+    //   setBackupModal(BackupModal.UNAUTHORIZED);
+    // });
   };
   return (
     <>
@@ -67,16 +67,16 @@ function UnAuthorized({
   setUser: (user?: User) => void;
 }) {
   const signIn = () => {
-    GoogleSignin.hasPlayServices()
-      .then(hasPlayServices => {
-        if (hasPlayServices) {
-          return GoogleSignin.signIn();
-        }
-      })
-      .then(user => {
-        setUser(user);
-        setBackupModal(BackupModal.AUTHORIZED);
-      });
+    // GoogleSignin.hasPlayServices()
+    //   .then(hasPlayServices => {
+    //     if (hasPlayServices) {
+    //       return GoogleSignin.signIn();
+    //     }
+    //   })
+    //   .then(user => {
+    //     setUser(user);
+    //     setBackupModal(BackupModal.AUTHORIZED);
+    //   });
   };
   return (
     <Button
@@ -218,23 +218,23 @@ export default function GoogleDriveModal({
   const [backupModal, setBackupModal] = useState(BackupModal.UNAUTHORIZED);
   const [user, setUser] = useState<User | null | undefined>(null);
   useEffect(() => {
-    GoogleSignin.configure({
-      scopes: ['https://www.googleapis.com/auth/drive.file'],
-    });
-    GoogleSignin.isSignedIn()
-      .then(isSignedIn => {
-        if (isSignedIn) {
-          return GoogleSignin.getCurrentUser();
-        } else {
-          setBackupModal(BackupModal.UNAUTHORIZED);
-        }
-      })
-      .then(user => {
-        if (user) {
-          setUser(user);
-          setBackupModal(BackupModal.AUTHORIZED);
-        }
-      });
+    // GoogleSignin.configure({
+    //   scopes: ['https://www.googleapis.com/auth/drive.file'],
+    // });
+    // GoogleSignin.isSignedIn()
+    //   .then(isSignedIn => {
+    //     if (isSignedIn) {
+    //       return GoogleSignin.getCurrentUser();
+    //     } else {
+    //       setBackupModal(BackupModal.UNAUTHORIZED);
+    //     }
+    //   })
+    //   .then(user => {
+    //     if (user) {
+    //       setUser(user);
+    //       setBackupModal(BackupModal.AUTHORIZED);
+    //     }
+    //   });
   }, []);
 
   const renderModal = () => {
@@ -291,15 +291,12 @@ export default function GoogleDriveModal({
           <TouchableOpacity
             onLongPress={() => {
               if (user?.user.email) {
-                Clipboard.setStringAsync(user.user.email).then(success => {
-                  if (success) {
-                    showToast(
-                      getString('common.copiedToClipboard', {
-                        name: user.user.email,
-                      }),
-                    );
-                  }
-                });
+                Clipboard.default.setString(user.user.email)
+                showToast(
+                  getString('common.copiedToClipboard', {
+                    name: user.user.email,
+                  }),
+                )
               }
             }}
           >

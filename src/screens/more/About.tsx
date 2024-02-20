@@ -1,7 +1,7 @@
 import React from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, Linking } from 'react-native';
 
-import * as Linking from 'expo-linking';
+// import * as Linking from 'expo-linking';
 
 import { getString } from '@strings/translations';
 import { ScreenContainer } from '@components/Common';

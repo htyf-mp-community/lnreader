@@ -12,7 +12,7 @@ import { coverPlaceholderColor } from '@theme/colors';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import ChapterItem from '@screens/novel/components/ChapterItem';
 import { useDownload, useTheme } from '@hooks/persisted';
-import { noop } from 'lodash-es';
+import { noop } from 'lodash';
 import { RootStackParamList } from '@navigators/types';
 import { FlatList } from 'react-native-gesture-handler';
 

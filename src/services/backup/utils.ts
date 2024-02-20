@@ -1,4 +1,4 @@
-import RNFS from 'react-native-fs';
+import * as RNFS from '@dr.pogodin/react-native-fs';
 import { SELF_HOST_BACKUP } from '@hooks/persisted/useSelfHost';
 import { TRACKER } from '@hooks/persisted/useTracker';
 import { LAST_UPDATE_TIME } from '@hooks/persisted/useUpdates';

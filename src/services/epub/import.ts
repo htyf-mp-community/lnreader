@@ -1,7 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 const db = SQLite.openDatabase('lnreader.db');
 import * as DocumentPicker from 'expo-document-picker';
-import * as RNFS from 'react-native-fs';
+import * as RNFS from '@dr.pogodin/react-native-fs';
 import BackgroundService from 'react-native-background-actions';
 import * as Notifications from 'expo-notifications';
 import { sleep } from '@utils/sleep';

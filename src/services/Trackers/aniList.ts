@@ -1,4 +1,5 @@
-import * as Linking from 'expo-linking';
+import {Linking} from 'react-native'
+// import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { ANILIST_CLIENT_ID } from '@env';
 import { AuthenticationResult, Tracker } from './index';
@@ -6,7 +7,7 @@ import { AuthenticationResult, Tracker } from './index';
 const apiEndpoint = 'https://graphql.anilist.co';
 const clientId = ANILIST_CLIENT_ID;
 
-const redirectUri = Linking.createURL('tracker/AL');
+const redirectUri = Linking.createURL && Linking.createURL('tracker/AL');
 
 const authUrl = `https://anilist.co/api/v2/oauth/authorize?client_id=${clientId}&response_type=token`;
 

@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import color from 'color';
 
-import * as Clipboard from 'expo-clipboard';
+import * as Clipboard from '@react-native-clipboard/clipboard';
 
 import { IconButton } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -105,13 +105,12 @@ const NovelInfoHeader = ({
                   })
                 }
                 onLongPress={() => {
-                  Clipboard.setStringAsync(novel.name).then(() =>
-                    showToast(
-                      getString('common.copiedToClipboard', {
-                        name: novel.name,
-                      }),
-                    ),
-                  );
+                  Clipboard.default.setString(novel.name)
+                  showToast(
+                    getString('common.copiedToClipboard', {
+                      name: novel.name,
+                    }),
+                  )
                 }}
               >
                 {novel.name}

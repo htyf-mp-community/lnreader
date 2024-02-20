@@ -11,7 +11,7 @@ import {
   createChapterNovelIdIndexQuery,
 } from './tables/ChapterTable';
 import { dbTxnErrorCallback } from './utils/helpers';
-import { noop } from 'lodash-es';
+import { noop } from 'lodash';
 
 const dbName = 'lnreader.db';
 

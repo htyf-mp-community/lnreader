@@ -1,7 +1,7 @@
 import { History } from '@database/types';
 import { txnErrorCallback } from '@database/utils/helpers';
 import * as SQLite from 'expo-sqlite';
-import { noop } from 'lodash-es';
+import { noop } from 'lodash';
 const db = SQLite.openDatabase('lnreader.db');
 
 import { showToast } from '../../utils/showToast';

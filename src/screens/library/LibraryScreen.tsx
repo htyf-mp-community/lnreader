@@ -31,7 +31,7 @@ import {
 } from '@database/queries/ChapterQueries';
 import { removeNovelsFromLibrary } from '@database/queries/NovelQueries';
 import SetCategoryModal from '@screens/novel/components/SetCategoriesModal';
-import { debounce } from 'lodash-es';
+import { debounce } from 'lodash';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SourceScreenSkeletonLoading from '@screens/browse/loadingAnimation/SourceScreenSkeletonLoading';
 import { Row } from '@components/Common';

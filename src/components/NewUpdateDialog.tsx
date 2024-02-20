@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, Dimensions, Linking } from 'react-native';
 import { Portal, Modal } from 'react-native-paper';
-import * as Linking from 'expo-linking';
+// import * as Linking from 'expo-linking';
 import { ScrollView } from 'react-native-gesture-handler';
 import Button from './Button/Button';
 import { getString } from '@strings/translations';

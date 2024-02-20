@@ -13,7 +13,7 @@ import { downloadChapter } from '@database/queries/ChapterQueries';
 import { fetchNovel } from '@services/plugin/fetch';
 import { parseChapterNumber } from '@utils/parseChapterNumber';
 
-import { noop } from 'lodash-es';
+import { noop } from 'lodash';
 import { txnErrorCallback } from '@database/utils/helpers';
 import { showToast } from '@utils/showToast';
 import { MMKVStorage, getMMKVObject, setMMKVObject } from '@utils/mmkv/mmkv';

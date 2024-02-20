@@ -5,7 +5,7 @@ import * as SQLite from 'expo-sqlite';
 import { SourceNovel } from '@plugins/types';
 import { LOCAL_PLUGIN_ID } from '@plugins/pluginManager';
 import { NovelDownloadFolder } from '@utils/constants/download';
-import * as RNFS from 'react-native-fs';
+import * as RNFS from '@dr.pogodin/react-native-fs';
 import { getMMKVObject, setMMKVObject } from '@utils/mmkv/mmkv';
 import { NOVEL_PAGE_UPDATES_PREFIX } from '@hooks/persisted/useNovel';
 const db = SQLite.openDatabase('lnreader.db');

@@ -1,4 +1,4 @@
-import RNFS from 'react-native-fs';
+import * as RNFS from '@dr.pogodin/react-native-fs';
 import * as SQLite from 'expo-sqlite';
 import { showToast } from '@utils/showToast';
 import { getPlugin } from '@plugins/pluginManager';
@@ -10,7 +10,7 @@ import { NovelDownloadFolder } from '@utils/constants/download';
 import { txnErrorCallback } from '@database/utils/helpers';
 import { Plugin } from '@plugins/types';
 import { Update } from '../types';
-import { noop } from 'lodash-es';
+import { noop } from 'lodash';
 import { getString } from '@strings/translations';
 
 const db = SQLite.openDatabase('lnreader.db');

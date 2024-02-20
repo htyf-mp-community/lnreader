@@ -1,4 +1,4 @@
-import { ExternalDirectoryPath } from 'react-native-fs';
+import { ExternalDirectoryPath } from '@dr.pogodin/react-native-fs';
 
 export const AppDownloadFolder = ExternalDirectoryPath + '/LNReader';
 

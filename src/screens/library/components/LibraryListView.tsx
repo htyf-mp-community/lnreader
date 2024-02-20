@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { RefreshControl, View } from 'react-native';
-import { xor } from 'lodash-es';
+import { xor } from 'lodash';
 
 import { EmptyView } from '@components/index';
 import NovelCover from '@components/NovelCover';

@@ -1,4 +1,4 @@
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+// import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import {
   DriveCreateRequestData,
   DriveFile,
@@ -20,8 +20,8 @@ const buildParams = (params: DriveRequestParams) => {
 export const list = async (
   params: DriveRequestParams,
 ): Promise<DriveReponse> => {
-  const { accessToken } = await GoogleSignin.getTokens();
-
+  // const { accessToken } = await GoogleSignin.getTokens();
+  const accessToken = ''
   if (!params.fields) {
     params.fields =
       'nextPageToken, files(id, name, description, createdTime, parents)';
@@ -40,7 +40,8 @@ export const list = async (
 export const create = async (
   data: DriveCreateRequestData,
 ): Promise<DriveFile> => {
-  const { accessToken } = await GoogleSignin.getTokens();
+  // const { accessToken } = await GoogleSignin.getTokens();
+  const accessToken = ''
 
   const params: DriveRequestParams = {
     fields: 'id, name, description, createdTime, parents',
@@ -87,7 +88,8 @@ export const updateMetadata = async (
   fileMetaData: Partial<DriveFile>,
   oldParent?: string,
 ) => {
-  const { accessToken } = await GoogleSignin.getTokens();
+  // const { accessToken } = await GoogleSignin.getTokens();
+  const accessToken = ''
   const url =
     BASE_URL +
     '/' +
@@ -114,7 +116,8 @@ export const updateMetadata = async (
 export const uploadMedia = async (
   sourceDirPath: string,
 ): Promise<DriveFile> => {
-  const { accessToken } = await GoogleSignin.getTokens();
+  // const { accessToken } = await GoogleSignin.getTokens();
+  const accessToken = ''
 
   const params: DriveRequestParams = {
     fields: 'id, parents',
@@ -129,7 +132,8 @@ export const uploadMedia = async (
 };
 
 export const download = async (file: DriveFile, distDirPath: string) => {
-  const { accessToken } = await GoogleSignin.getTokens();
+  // const { accessToken } = await GoogleSignin.getTokens();
+  const accessToken = ''
   const url = BASE_URL + '/' + file.id + '?alt=media';
   return ZipArchive.remoteUnzip(distDirPath, url, {
     Authorization: `Bearer ${accessToken}`,
