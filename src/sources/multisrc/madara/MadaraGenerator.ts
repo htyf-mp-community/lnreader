@@ -218,7 +218,6 @@ export const TurkceLightNovelsScraper = new MadaraScraper(
       'novel': 'light-novel',
       'chapter': 'light-novel',
     },
-
     'lang': 'Turkish',
   },
 );
@@ -293,7 +292,7 @@ export const MTLDashNovelScraper = new MadaraScraper(
   134,
   'https://mtl-novel.com/',
   'MTL-Novel',
-  { 'lang': 'English', 'orderBy': 'latest' },
+  { 'useNewChapterEndpoint': true, 'lang': 'English', 'orderBy': 'latest' },
 );
 
 export const ZetroTranslationScraper = new MadaraScraper(
