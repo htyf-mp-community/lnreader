@@ -1,3 +1,13 @@
+## [红糖云服app下载 https://mp.dagouzhi.com/ ](https://mp.dagouzhi.com/)
+
+### 使用红糖云服app 扫码添加小程序
+
+[![小程序码](./qrcode.png)](https://share.dagouzhi.com/#/pages/index/index?data=%7B%22type%22%3A%22app%22%2C%22name%22%3A%22%E5%B0%8F%E8%AF%B4%E5%9F%BA%E5%9C%B0%22%2C%22projectname%22%3A%22%E5%B0%8F%E8%AF%B4%E5%9F%BA%E5%9C%B0%22%2C%22appid%22%3A%22lnreader_996%22%2C%22appUrlConfig%22%3A%22https%3A%2F%2Fraw.gitmirror.com%2Fhtyf-mp-community%2Flnreader%2Fmaster%2Fdgz%2Fbuild%2Foutputs%2Fapp.json%22%2C%22zipUrl%22%3A%22https%3A%2F%2Fraw.gitmirror.com%2Fhtyf-mp-community%2Flnreader%2Fmaster%2Fdgz%2Fbuild%2Foutputs%2Fdist.dgz%22%7D)
+
+>更多小程序demo 请查看[https://github.com/htyf-mp-community/demo](https://github.com/htyf-mp-community/demo)
+
+
+
 <p align="center">
   <img src="./.github/readme-images/icon_alt.png" align="center" width="128" />
 <p>
