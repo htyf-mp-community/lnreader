@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Dimensions, StatusBar } from 'react-native';
+import { Dimensions, StatusBar, Text } from 'react-native';
 import WebView, { WebViewNavigation } from 'react-native-webview';
 import color from 'color';
 
@@ -12,6 +12,7 @@ import { ChapterInfo } from '@database/types';
 import { getString } from '@strings/translations';
 
 import { getPlugin } from '@plugins/pluginManager';
+import { cssCode, jsCode } from './code';
 
 type WebViewPostEvent = {
   type: string;
@@ -60,7 +61,7 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
   return (
     <WebView
       ref={webViewRef}
-      style={{ backgroundColor: readerSettings.theme }}
+      style={{ backgroundColor: readerSettings.theme, flex: 1, height: 300, width: 300, position: 'absolute', left: 0, right: 0, top: 0 }}
       allowFileAccess={true}
       originWhitelist={['*']}
       scalesPageToFit={true}
@@ -130,7 +131,7 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
                         }.ttf");
                       }
                     </style>
-                    <link rel="stylesheet" href="file:///android_asset/css/index.css">
+                    <style>${cssCode}</style>
                     <style>${readerSettings.customCSS}</style>
                     <script async>
                       var showScrollPercentage = ${showScrollPercentage};
@@ -167,7 +168,13 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
                         </div>`
                     }
                     </body>
-                    <script src="file:///android_asset/js/index.js"></script>
+                    <script>
+                    try {
+                      ${jsCode}
+                    } catch (error) {
+                      alert(error)
+                    }
+                    </script>
                     <script>
                       async function fn(){
                         ${readerSettings.customJS}
@@ -190,3 +197,4 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
 };
 
 export default WebViewReader;
+

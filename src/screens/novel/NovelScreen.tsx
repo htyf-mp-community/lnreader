@@ -301,35 +301,40 @@ const Novel = ({ route, navigation }: NovelScreenProps) => {
       });
     }
   };
-
+  const headerStyle = {
+    paddingRight: 102,
+    paddingTop: topInset - 4,
+    height: 50+topInset
+  }
   return (
-    <DrawerLayoutAndroid
-      drawerLockMode={pages.length <= 1 ? 'locked-closed' : 'unlocked'}
-      ref={drawerRef}
-      drawerPosition="left"
-      drawerWidth={300}
-      renderNavigationView={() => (
-        <NovelDrawer
-          theme={theme}
-          pages={pages}
-          pageIndex={pageIndex}
-          openPage={openPage}
-          drawerRef={drawerRef}
-        />
-      )}
+    <View
+      style={[styles.container]}
+      // drawerLockMode={pages.length <= 1 ? 'locked-closed' : 'unlocked'}
+      // ref={drawerRef}
+      // drawerPosition="left"
+      // drawerWidth={300}
+      // renderNavigationView={() => (
+      //   <NovelDrawer
+      //     theme={theme}
+      //     pages={pages}
+      //     pageIndex={pageIndex}
+      //     openPage={openPage}
+      //     drawerRef={drawerRef}
+      //   />
+      // )}
     >
       <Portal.Host>
         <View style={[styles.container, { backgroundColor: theme.background }]}>
           <Portal>
             {selected.length === 0 ? (
               <View
-                style={{
+                style={[{
                   position: 'absolute',
                   height: (StatusBar.currentHeight || 0) + 54,
                   width: '100%',
                   flexDirection: 'row',
                   justifyContent: 'space-between',
-                }}
+                }, headerStyle]}
               >
                 <IconButton
                   icon="arrow-left"
@@ -531,7 +536,7 @@ const Novel = ({ route, navigation }: NovelScreenProps) => {
               <Animated.View
                 entering={FadeIn.duration(150)}
                 exiting={FadeOut.duration(150)}
-                style={{
+                style={[{
                   position: 'absolute',
                   width: '100%',
                   elevation: 2,
@@ -540,7 +545,7 @@ const Novel = ({ route, navigation }: NovelScreenProps) => {
                   flexDirection: 'row',
                   alignItems: 'center',
                   paddingBottom: 8,
-                }}
+                }, headerStyle]}
               >
                 <Appbar.Action
                   icon="close"
@@ -563,6 +568,10 @@ const Novel = ({ route, navigation }: NovelScreenProps) => {
           </Portal>
           <View style={{ minHeight: 3, flex: 1 }}>
             <FlashList
+              style={{
+                width: '100%',
+                flex: 1,
+              }}
               ref={flatlistRef}
               estimatedItemSize={64}
               data={chapters}
@@ -691,7 +700,7 @@ const Novel = ({ route, navigation }: NovelScreenProps) => {
           />
         </View>
       </Portal.Host>
-    </DrawerLayoutAndroid>
+    </View>
   );
 };
 
