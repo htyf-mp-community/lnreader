@@ -123,7 +123,7 @@ const fetchPlugins = async () => {
 
   const availablePlugins: Record<Language, Array<PluginItem>> = await fetch(
     // `https://raw.githubusercontent.com/${githubUsername}/${githubRepository}/beta-dist/.dist/plugins.min.json`,
-    `https://raw.gitmirror.com/${githubUsername}/${githubRepository}/beta-dist/.dist/plugins.min.json`,
+    `https://raw.gitmirror.com/${githubUsername}/${githubRepository}/dist/.dist/plugins.min.json`,
   )
     .then(res => res.json())
     .catch(() => {
