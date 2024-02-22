@@ -118,11 +118,12 @@ const updatePlugin = async (plugin: PluginItem) => {
 
 const fetchPlugins = async () => {
   // plugins host
-  const githubUsername = 'LNReader';
+  const githubUsername = 'htyf-mp-community';
   const githubRepository = 'lnreader-sources';
 
   const availablePlugins: Record<Language, Array<PluginItem>> = await fetch(
-    `https://raw.githubusercontent.com/${githubUsername}/${githubRepository}/beta-dist/.dist/plugins.min.json`,
+    // `https://raw.githubusercontent.com/${githubUsername}/${githubRepository}/beta-dist/.dist/plugins.min.json`,
+    `https://raw.gitmirror.com/${githubUsername}/${githubRepository}/beta-dist/.dist/plugins.min.json`,
   )
     .then(res => res.json())
     .catch(() => {
