@@ -1,6 +1,6 @@
-import { ExternalDirectoryPath } from '@dr.pogodin/react-native-fs';
+import { DocumentDirectoryPath } from '@dr.pogodin/react-native-fs';
 
-export const AppDownloadFolder = ExternalDirectoryPath + '/LNReader';
+export const AppDownloadFolder = DocumentDirectoryPath + '/LNReader';
 
 export const NovelDownloadFolder = AppDownloadFolder + '/Novels';
 
