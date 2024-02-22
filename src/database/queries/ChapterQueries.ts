@@ -233,7 +233,7 @@ const createChapterFolder = async (
     if (!(await RNFS.exists(p))) {
       await RNFS.mkdir(p);
       if (nomedia) {
-        await RNFS.writeFile(nomediaPath, ',', 'utf8');
+        await RNFS.writeFile(nomediaPath, ',');
       }
     }
   };

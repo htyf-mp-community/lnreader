@@ -18,6 +18,7 @@ import { BACKGROUND_ACTION, BackgoundAction } from '@services/constants';
 import { getString } from '@strings/translations';
 import { ChapterItem, SourceNovel } from '@plugins/types';
 import { load as parseXML } from 'cheerio';
+import { showToast } from '@utils/showToast';
 
 interface TaskData {
   delay: number;
@@ -148,6 +149,7 @@ const parseNovelAndChapters = async (
   const parsedContent = parseXML(contentText);
   const novelName = parsedContent('dc\\:title').text().trim();
   const author = parsedContent('dc\\:creator').text().trim();
+  const description = parsedContent('dc\\:description').text().trim();
   const coverRef = parsedContent('meta[name="cover"]').attr('content');
   let cover = '';
   if (coverRef) {
@@ -211,6 +213,7 @@ const parseNovelAndChapters = async (
     cover: cover,
     path: contentDir + novelName, // temporary
     chapters: chapters,
+    summary: description,
   };
   return novel;
 };
@@ -340,7 +343,8 @@ export const importEpub = async () => {
       copyToCacheDirectory: false,
     });
     if (epubFile.type === 'cancel') {
-      throw new Error(getString('common.cancel'));
+      showToast(getString('common.cancel'));
+      return;
     }
     await BackgroundService.start<TaskData>(importEpubAction, {
       taskName: 'Import Epub',

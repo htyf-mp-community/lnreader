@@ -1,19 +1,32 @@
-import { FC } from 'react';
-import { Dimensions, StatusBar, View } from 'react-native';
+import { FC, useEffect, useMemo } from 'react';
+import {
+  Dimensions,
+  NativeEventEmitter,
+  NativeModules,
+  StatusBar,
+  View,
+} from 'react-native';
 import WebView, { WebViewNavigation } from 'react-native-webview';
 import color from 'color';
 
-import {
-  useChapterGeneralSettings,
-  useChapterReaderSettings,
-  useTheme,
-} from '@hooks/persisted';
+import { useTheme } from '@hooks/persisted';
 import { ChapterInfo } from '@database/types';
 import { getString } from '@strings/translations';
 
 import { getPlugin } from '@plugins/pluginManager';
+import { MMKVStorage, getMMKVObject } from '@utils/mmkv/mmkv';
+import {
+  CHAPTER_GENERAL_SETTINGS,
+  CHAPTER_READER_SETTINGS,
+  ChapterGeneralSettings,
+  ChapterReaderSettings,
+  initialChapterGeneralSettings,
+  initialChapterReaderSettings,
+} from '@hooks/persisted/useSettings';
+import { getBatteryLevelSync } from 'react-native-device-info';
+
 import { cssCode, jsCode } from './assets';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type WebViewPostEvent = {
   type: string;
@@ -28,7 +41,6 @@ type WebViewReaderProps = {
     chapter: ChapterInfo;
   };
   html: string;
-  swipeGestures: boolean;
   nextChapter: ChapterInfo;
   webViewRef: React.RefObject<WebView>;
   saveProgress(percentage: number): void;
@@ -42,7 +54,6 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
   const {
     data,
     html,
-    swipeGestures,
     nextChapter,
     webViewRef,
     saveProgress,
@@ -52,14 +63,65 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
     onWebViewNavigationStateChange,
   } = props;
   const {top, bottom} = useSafeAreaInsets()
+  const assetsUriPrefix = useMemo(
+    () => (__DEV__ ? 'http://localhost:8081/assets' : 'file:///android_asset'),
+    [],
+  );
+  const { RNDeviceInfo } = NativeModules;
+  const deviceInfoEmitter = new NativeEventEmitter(RNDeviceInfo);
   const theme = useTheme();
   const { novel, chapter } = data;
-  const readerSettings = useChapterReaderSettings();
-  const { showScrollPercentage } = useChapterGeneralSettings();
-
+  const readerSettings = useMemo(
+    () =>
+      getMMKVObject<ChapterReaderSettings>(CHAPTER_READER_SETTINGS) ||
+      initialChapterReaderSettings,
+    [],
+  );
+  const { showScrollPercentage, swipeGestures, showBatteryAndTime } = useMemo(
+    () =>
+      getMMKVObject<ChapterGeneralSettings>(CHAPTER_GENERAL_SETTINGS) ||
+      initialChapterGeneralSettings,
+    [],
+  );
+  const batteryLevel = useMemo(getBatteryLevelSync, []);
   const layoutHeight = Dimensions.get('window').height - top - bottom;
   const layoutWidth = Dimensions.get('window').width;
   const plugin = getPlugin(novel?.pluginId);
+
+  useEffect(() => {
+    const mmkvListener = MMKVStorage.addOnValueChangedListener(key => {
+      switch (key) {
+        case CHAPTER_READER_SETTINGS:
+          webViewRef.current?.injectJavaScript(
+            `reader.updateReaderSettings(${MMKVStorage.getString(
+              CHAPTER_READER_SETTINGS,
+            )})`,
+          );
+          break;
+        case CHAPTER_GENERAL_SETTINGS:
+          webViewRef.current?.injectJavaScript(
+            `reader.updateGeneralSettings(${MMKVStorage.getString(
+              CHAPTER_GENERAL_SETTINGS,
+            )})`,
+          );
+          break;
+      }
+    });
+
+    const subscription = deviceInfoEmitter.addListener(
+      'RNDeviceInfo_batteryLevelDidChange',
+      (level: number) => {
+        webViewRef.current?.injectJavaScript(
+          `reader.updateBatteryLevel(${level})`,
+        );
+      },
+    );
+
+    return () => {
+      subscription.remove();
+      mmkvListener.remove();
+    };
+  });
   return (
     <View style={{flex: 1, paddingTop: top}}>
       <WebView
@@ -128,17 +190,19 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
                         --chapterCtn-height: ${layoutHeight - 140};
                         }
                         @font-face {
-                          font-family: ${readerSettings.fontFamily};
-                          src: url("file:///android_asset/fonts/${
-                            readerSettings.fontFamily
-                          }.ttf");
+                          // font-family: ${readerSettings.fontFamily};
+                          // src: url("${assetsUriPrefix}/fonts/${readerSettings.fontFamily}.ttf");
                         }
                       </style>
                       <style>${cssCode}</style>
                       <style>${readerSettings.customCSS}</style>
                       <script async>
-                        var showScrollPercentage = ${showScrollPercentage};
-                        var swipeGestures = ${swipeGestures};
+                        var initSettings = {
+                          showScrollPercentage: ${showScrollPercentage},
+                          swipeGestures: ${swipeGestures},
+                          showBatteryAndTime: ${showBatteryAndTime},
+                        }
+                        var batteryLevel = ${batteryLevel};
                         var autoSaveInterval = 2222;
                       </script>
                     </head>
@@ -152,7 +216,13 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
                           ${html}
                         </chapter>
                         <div class="d-none" id="ScrollBar"></div>
-                        <div id="reader-percentage"></div>
+                        <div id="reader-footer-wrapper">
+                            <div id="reader-footer">
+                                <div id="reader-battery" class="reader-footer-item"></div>
+                                <div id="reader-percentage" class="reader-footer-item"></div>
+                                <div id="reader-time" class="reader-footer-item"></div>
+                            </div>
+                        </div>
                       </div>
                       <div class="infoText">
                         ${getString(
@@ -201,4 +271,3 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
 };
 
 export default WebViewReader;
-

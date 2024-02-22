@@ -1,8 +1,10 @@
 export const jsCode = `
 class Reader {
   constructor() {
-    this.percentage =
-      showScrollPercentage && document.getElementById('reader-percentage');
+    this.footerWrapper = document.getElementById('reader-footer-wrapper');
+    this.percentage = document.getElementById('reader-percentage');
+    this.battery = document.getElementById('reader-battery');
+    this.time = document.getElementById('reader-time');
     this.paddingTop = parseInt(
       getComputedStyle(document.querySelector('html')).getPropertyValue(
         'padding-top',
@@ -24,12 +26,91 @@ class Reader {
         }),
       autoSaveInterval,
     );
+    this.time.innerText = new Date().toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    this.timeInterval = setInterval(() => {
+      this.time.innerText = new Date().toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }, 60000);
+    this.updateBatteryLevel(batteryLevel);
+    this.updateGeneralSettings(initSettings);
   }
 
   refresh = () => {
     this.chapterHeight = this.chapter.scrollHeight + this.paddingTop;
   };
   post = obj => window.ReactNativeWebView.postMessage(JSON.stringify(obj));
+  updateReaderSettings = settings => {
+    document.documentElement.style.setProperty(
+      '--readerSettings-theme',
+      settings.theme,
+    );
+    document.documentElement.style.setProperty(
+      '--readerSettings-padding',
+      settings.padding + '%',
+    );
+    document.documentElement.style.setProperty(
+      '--readerSettings-textSize',
+      settings.textSize + 'px',
+    );
+    document.documentElement.style.setProperty(
+      '--readerSettings-textColor',
+      settings.textColor,
+    );
+    document.documentElement.style.setProperty(
+      '--readerSettings-textAlign',
+      settings.textAlign,
+    );
+    document.documentElement.style.setProperty(
+      '--readerSettings-lineHeight',
+      settings.lineHeight,
+    );
+    document.documentElement.style.setProperty(
+      '--readerSettings-fontFamily',
+      settings.fontFamily,
+    );
+    new FontFace(
+      settings.fontFamily,
+      'url("file:///android_asset/fonts/' + settings.fontFamily + '.ttf")',
+    )
+      .load()
+      .then(function (loadedFont) {
+        document.fonts.add(loadedFont);
+      });
+  };
+  updateGeneralSettings = settings => {
+    this.showScrollPercentage = settings.showScrollPercentage;
+    this.showBatteryAndTime = settings.showBatteryAndTime;
+    if (settings.swipeGestures) {
+      swipeHandler.enable();
+    } else {
+      swipeHandler.disable();
+    }
+    if (!this.showScrollPercentage && !this.showBatteryAndTime) {
+      this.footerWrapper.classList.add('d-none');
+    } else {
+      this.footerWrapper.classList.remove('d-none');
+      if (this.showScrollPercentage) {
+        this.percentage.classList.remove('hidden');
+      } else {
+        this.percentage.classList.add('hidden');
+      }
+      if (this.showBatteryAndTime) {
+        this.battery.classList.remove('hidden');
+        this.time.classList.remove('hidden');
+      } else {
+        this.battery.classList.add('hidden');
+        this.time.classList.add('hidden');
+      }
+    }
+  };
+  updateBatteryLevel = level => {
+    this.battery.innerText = Math.ceil(level * 100) + '%';
+  };
 }
 class ScrollHandler {
   constructor(reader) {
@@ -110,13 +191,9 @@ class ScrollHandler {
 }
 
 class SwipeHandler {
-  constructor(reader) {
-    this.reader = reader;
+  constructor() {
     this.initialX = null;
     this.initialY = null;
-    if (swipeGestures) {
-      this.enable();
-    }
   }
 
   touchStartHandler = e => {
@@ -129,7 +206,7 @@ class SwipeHandler {
     let diffY = e.changedTouches[0].screenY - this.initialY;
     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
       e.preventDefault();
-      this.reader.post({ type: diffX < 0 ? 'next' : 'prev' });
+      reader.post({ type: diffX < 0 ? 'next' : 'prev' });
     }
   };
 
@@ -173,9 +250,9 @@ class TextToSpeech {
   };
 }
 
+var swipeHandler = new SwipeHandler();
 var reader = new Reader();
 var scrollHandler = new ScrollHandler(reader);
-var swipeHandler = new SwipeHandler(reader);
 var tts = new TextToSpeech(reader);
 
 `
@@ -194,6 +271,7 @@ body {
   padding-bottom: 40px;
 
   font-size: var(--readerSettings-textSize);
+  background-color: var(--readerSettings-theme);
   color: var(--readerSettings-textColor);
   text-align: var(--readerSettings-textAlign);
   line-height: var(--readerSettings-lineHeight);
@@ -259,6 +337,10 @@ img {
   display: none;
 }
 
+.hidden {
+  visibility: hidden;
+}
+
 #ScrollBar {
   position: fixed;
   right: 5vw;
@@ -319,18 +401,27 @@ img {
   background-color: var(--theme-primary);
 }
 
-#reader-percentage {
+#reader-footer-wrapper {
   position: fixed;
-  padding-top: 0.5rem;
-  min-height: 2rem;
-  width: 100%;
-  background-color: var(--readerSettings-theme);
-  color: var(--readerSettings-textColor);
   bottom: 0;
   left: 0;
-  right: 0;
+  width: 100%;
+}
+
+#reader-footer {
+  display: flex;
+  flex: 1;
+  justify-content: space-between;
+  min-height: 2rem;
+  padding: 0.5rem 2rem 0 2rem;
+  background-color: var(--readerSettings-theme);
+  color: var(--readerSettings-textColor);
   font-size: 1rem;
   text-align: center;
+}
+
+.reader-footer-item{
+  display: flex;
 }
 
 t-t-s.tts-highlight {

@@ -43,7 +43,6 @@ import WebViewReader from './components/WebViewReader';
 import { useFullscreenMode, useTextToSpeech } from '@hooks';
 import ReaderBottomSheetV2 from './components/ReaderBottomSheet/ReaderBottomSheet';
 import { defaultTo } from 'lodash';
-import BottomInfoBar from './components/BottomInfoBar/BottomInfoBar';
 import { sanitizeChapterText } from './utils/sanitizeChapterText';
 import ChapterDrawer from './components/ChapterDrawer';
 import ChapterLoadingScreen from './ChapterLoadingScreen/ChapterLoadingScreen';
@@ -101,7 +100,6 @@ export const ChapterContent = ({
   const theme = useTheme();
 
   const {
-    swipeGestures,
     useVolumeButtons,
     autoScroll,
     autoScrollInterval,
@@ -352,7 +350,6 @@ export const ChapterContent = ({
       <WebViewReader
         data={{ novel, chapter }}
         html={chapterText}
-        swipeGestures={swipeGestures}
         nextChapter={nextChapter}
         webViewRef={webViewRef}
         saveProgress={saveProgress}
@@ -363,7 +360,6 @@ export const ChapterContent = ({
         navigateToChapterBySwipe={navigateToChapterBySwipe}
         onWebViewNavigationStateChange={onWebViewNavigationStateChange}
       />
-      <BottomInfoBar />
       <ReaderBottomSheetV2 bottomSheetRef={readerSheetRef} />
       {!hidden && (
         <>
