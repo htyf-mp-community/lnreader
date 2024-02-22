@@ -9,6 +9,7 @@ import {
   Dimensions,
   NativeEventEmitter,
   DrawerLayoutAndroid,
+  View,
 } from 'react-native';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
@@ -52,26 +53,24 @@ import { ChapterInfo } from '@database/types';
 import WebView, { WebViewNavigation } from 'react-native-webview';
 import { NovelDownloadFolder } from '@utils/constants/download';
 import { getString } from '@strings/translations';
+import Drawer from 'react-native-drawer'
 
 const Chapter = ({ route, navigation }: ChapterScreenProps) => {
-  const drawerRef = useRef<DrawerLayoutAndroid>(null);
+  const drawerRef = useRef<Drawer>(null);
   const { chapters, novelSettings, pages, setLastRead, setPageIndex } =
     useNovel(route.params.novel.path, route.params.novel.pluginId);
   return (
-    <DrawerLayoutAndroid
-      ref={drawerRef}
-      drawerWidth={300}
-      drawerPosition="left"
-      renderNavigationView={() => (
-        <ChapterDrawer
-          route={route}
-          navigation={navigation}
-          chapters={chapters}
-          novelSettings={novelSettings}
-          pages={pages}
-          setPageIndex={setPageIndex}
-        />
-      )}
+    <Drawer
+      ref={drawerRef as any}
+      openDrawerOffset={300}
+      content={<ChapterDrawer
+        route={route}
+        navigation={navigation}
+        chapters={chapters}
+        novelSettings={novelSettings}
+        pages={pages}
+        setPageIndex={setPageIndex}
+      />}
     >
       <ChapterContent
         route={route}
@@ -79,12 +78,12 @@ const Chapter = ({ route, navigation }: ChapterScreenProps) => {
         drawerRef={drawerRef}
         setLastRead={setLastRead}
       />
-    </DrawerLayoutAndroid>
-  );
+    </Drawer>
+  )
 };
 
 type ChapterContentProps = ChapterScreenProps & {
-  drawerRef: React.RefObject<DrawerLayoutAndroid>;
+  drawerRef: React.RefObject<Drawer>;
   setLastRead: (chapter: ChapterInfo | undefined) => void;
 };
 
@@ -310,7 +309,8 @@ export const ChapterContent = ({
   });
 
   const openDrawer = useCallback(() => {
-    drawerRef.current?.openDrawer();
+    // drawerRef.current?.openDrawer?.();
+    drawerRef.current?.open?.();
     setHidden(true);
   }, [drawerRef]);
 

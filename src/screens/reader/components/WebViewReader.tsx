@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Dimensions, StatusBar, Text } from 'react-native';
+import { Dimensions, StatusBar, View } from 'react-native';
 import WebView, { WebViewNavigation } from 'react-native-webview';
 import color from 'color';
 
@@ -12,7 +12,8 @@ import { ChapterInfo } from '@database/types';
 import { getString } from '@strings/translations';
 
 import { getPlugin } from '@plugins/pluginManager';
-import { cssCode, jsCode } from './code';
+import { cssCode, jsCode } from './assets';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type WebViewPostEvent = {
   type: string;
@@ -50,149 +51,152 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
     navigateToChapterBySwipe,
     onWebViewNavigationStateChange,
   } = props;
-
+  const {top, bottom} = useSafeAreaInsets()
   const theme = useTheme();
   const { novel, chapter } = data;
   const readerSettings = useChapterReaderSettings();
   const { showScrollPercentage } = useChapterGeneralSettings();
 
-  const layoutHeight = Dimensions.get('window').height;
+  const layoutHeight = Dimensions.get('window').height - top - bottom;
+  const layoutWidth = Dimensions.get('window').width;
   const plugin = getPlugin(novel?.pluginId);
   return (
-    <WebView
-      ref={webViewRef}
-      style={{ backgroundColor: readerSettings.theme, flex: 1, height: 300, width: 300, position: 'absolute', left: 0, right: 0, top: 0 }}
-      allowFileAccess={true}
-      originWhitelist={['*']}
-      scalesPageToFit={true}
-      showsVerticalScrollIndicator={false}
-      onNavigationStateChange={onWebViewNavigationStateChange}
-      javaScriptEnabled={true}
-      onLayout={async () => onLayout()}
-      onMessage={ev => {
-        const event: WebViewPostEvent = JSON.parse(ev.nativeEvent.data);
-        switch (event.type) {
-          case 'hide':
-            onPress();
-            break;
-          case 'next':
-            navigateToChapterBySwipe('SWIPE_LEFT');
-            break;
-          case 'prev':
-            navigateToChapterBySwipe('SWIPE_RIGHT');
-            break;
-          case 'error-img':
-            if (event.data && typeof event.data === 'string') {
-              plugin?.fetchImage(event.data).then(base64 => {
-                webViewRef.current?.injectJavaScript(
-                  `document.querySelector("img[error-src='${event.data}']").src="data:image/jpg;base64,${base64}"`,
-                );
-              });
-            }
-            break;
-          case 'save':
-            if (event.data && typeof event.data === 'number') {
-              saveProgress(event.data);
-            }
-            break;
-        }
-      }}
-      source={{
-        html: `
-                <html>
-                  <head>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-                    <style>
-                    :root {
-                      --StatusBar-currentHeight: ${StatusBar.currentHeight};
-                      --readerSettings-theme: ${readerSettings.theme};
-                      --readerSettings-padding: ${readerSettings.padding}%;
-                      --readerSettings-textSize: ${readerSettings.textSize}px;
-                      --readerSettings-textColor: ${readerSettings.textColor};
-                      --readerSettings-textAlign: ${readerSettings.textAlign};
-                      --readerSettings-lineHeight: ${readerSettings.lineHeight};
-                      --readerSettings-fontFamily: ${readerSettings.fontFamily};
-                      --theme-primary: ${theme.primary};
-                      --theme-onPrimary: ${theme.onPrimary};
-                      --theme-secondary: ${theme.secondary};
-                      --theme-onSecondary: ${theme.onSecondary};
-                      --theme-surface: ${theme.surface};
-                      --theme-surface-0-9: ${color(theme.surface)
-                        .alpha(0.9)
-                        .toString()};
-                      --theme-onSurface:${theme.onSurface};
-                      --theme-outline: ${theme.outline};
-                      --chapterCtn-height: ${layoutHeight - 140};
+    <View style={{flex: 1, paddingTop: top}}>
+      <WebView
+        ref={webViewRef}
+        style={{ backgroundColor: readerSettings.theme, width: layoutWidth }}
+        allowFileAccess={true}
+        originWhitelist={['*']}
+        scalesPageToFit={true}
+        showsVerticalScrollIndicator={false}
+        onNavigationStateChange={onWebViewNavigationStateChange}
+        javaScriptEnabled={true}
+        onLayout={async () => onLayout()}
+        onMessage={ev => {
+          const event: WebViewPostEvent = JSON.parse(ev.nativeEvent.data);
+          switch (event.type) {
+            case 'hide':
+              onPress();
+              break;
+            case 'next':
+              navigateToChapterBySwipe('SWIPE_LEFT');
+              break;
+            case 'prev':
+              navigateToChapterBySwipe('SWIPE_RIGHT');
+              break;
+            case 'error-img':
+              if (event.data && typeof event.data === 'string') {
+                plugin?.fetchImage(event.data).then(base64 => {
+                  webViewRef.current?.injectJavaScript(
+                    `document.querySelector("img[error-src='${event.data}']").src="data:image/jpg;base64,${base64}"`,
+                  );
+                });
+              }
+              break;
+            case 'save':
+              if (event.data && typeof event.data === 'number') {
+                saveProgress(event.data);
+              }
+              break;
+          }
+        }}
+        source={{
+          html: `
+                  <html>
+                    <head>
+                      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+                      <style>
+                      :root {
+                        --StatusBar-currentHeight: ${StatusBar.currentHeight};
+                        --readerSettings-theme: ${readerSettings.theme};
+                        --readerSettings-padding: ${readerSettings.padding}%;
+                        --readerSettings-textSize: ${readerSettings.textSize}px;
+                        --readerSettings-textColor: ${readerSettings.textColor};
+                        --readerSettings-textAlign: ${readerSettings.textAlign};
+                        --readerSettings-lineHeight: ${readerSettings.lineHeight};
+                        --readerSettings-fontFamily: ${readerSettings.fontFamily};
+                        --theme-primary: ${theme.primary};
+                        --theme-onPrimary: ${theme.onPrimary};
+                        --theme-secondary: ${theme.secondary};
+                        --theme-onSecondary: ${theme.onSecondary};
+                        --theme-surface: ${theme.surface};
+                        --theme-surface-0-9: ${color(theme.surface)
+                          .alpha(0.9)
+                          .toString()};
+                        --theme-onSurface:${theme.onSurface};
+                        --theme-outline: ${theme.outline};
+                        --chapterCtn-height: ${layoutHeight - 140};
+                        }
+                        @font-face {
+                          font-family: ${readerSettings.fontFamily};
+                          src: url("file:///android_asset/fonts/${
+                            readerSettings.fontFamily
+                          }.ttf");
+                        }
+                      </style>
+                      <style>${cssCode}</style>
+                      <style>${readerSettings.customCSS}</style>
+                      <script async>
+                        var showScrollPercentage = ${showScrollPercentage};
+                        var swipeGestures = ${swipeGestures};
+                        var autoSaveInterval = 2222;
+                      </script>
+                    </head>
+                    <body>
+                      <div class="chapterCtn" onclick="reader.post({type:'hide'})">
+                        <chapter 
+                          data-plugin-id='${novel.pluginId}'
+                          data-novel-id='${chapter.novelId}'
+                          data-chapter-id='${chapter.id}'
+                        >
+                          ${html}
+                        </chapter>
+                        <div class="d-none" id="ScrollBar"></div>
+                        <div id="reader-percentage"></div>
+                      </div>
+                      <div class="infoText">
+                        ${getString(
+                          'readerScreen.finished',
+                        )}: ${chapter.name.trim()}
+                      </div>
+                      ${
+                        nextChapter
+                          ? `<button class="nextButton" onclick="reader.post({type:'next'})">
+                              ${getString('readerScreen.nextChapter', {
+                                name: nextChapter.name,
+                              })}
+                            </button>`
+                          : `<div class="infoText">
+                            ${getString('readerScreen.noNextChapter')}
+                          </div>`
                       }
-                      @font-face {
-                        font-family: ${readerSettings.fontFamily};
-                        src: url("file:///android_asset/fonts/${
-                          readerSettings.fontFamily
-                        }.ttf");
+                      </body>
+                      <script>
+                      try {
+                        ${jsCode}
+                      } catch (error) {
+                        alert(error)
                       }
-                    </style>
-                    <style>${cssCode}</style>
-                    <style>${readerSettings.customCSS}</style>
-                    <script async>
-                      var showScrollPercentage = ${showScrollPercentage};
-                      var swipeGestures = ${swipeGestures};
-                      var autoSaveInterval = 2222;
-                    </script>
-                  </head>
-                  <body>
-                    <div class="chapterCtn" onclick="reader.post({type:'hide'})">
-                      <chapter 
-                        data-plugin-id='${novel.pluginId}'
-                        data-novel-id='${chapter.novelId}'
-                        data-chapter-id='${chapter.id}'
-                      >
-                        ${html}
-                      </chapter>
-                      <div class="d-none" id="ScrollBar"></div>
-                      <div id="reader-percentage"></div>
-                    </div>
-                    <div class="infoText">
-                      ${getString(
-                        'readerScreen.finished',
-                      )}: ${chapter.name.trim()}
-                    </div>
-                    ${
-                      nextChapter
-                        ? `<button class="nextButton" onclick="reader.post({type:'next'})">
-                            ${getString('readerScreen.nextChapter', {
-                              name: nextChapter.name,
-                            })}
-                          </button>`
-                        : `<div class="infoText">
-                          ${getString('readerScreen.noNextChapter')}
-                        </div>`
-                    }
-                    </body>
-                    <script>
-                    try {
-                      ${jsCode}
-                    } catch (error) {
-                      alert(error)
-                    }
-                    </script>
-                    <script>
-                      async function fn(){
-                        ${readerSettings.customJS}
-                        // scroll to saved position
-                        reader.refresh();
-                        window.scrollTo({
-                          top: reader.chapterHeight * ${
-                            chapter.progress
-                          } / 100 - reader.layoutHeight,
-                          behavior: 'smooth',
-                        });
-                      }
-                      document.addEventListener("DOMContentLoaded", fn);
-                    </script>
-                </html>
-                `,
-      }}
-    />
+                      </script>
+                      <script>
+                        async function fn(){
+                          ${readerSettings.customJS}
+                          // scroll to saved position
+                          reader.refresh();
+                          window.scrollTo({
+                            top: reader.chapterHeight * ${
+                              chapter.progress
+                            } / 100 - reader.layoutHeight,
+                            behavior: 'smooth',
+                          });
+                        }
+                        document.addEventListener("DOMContentLoaded", fn);
+                      </script>
+                  </html>
+                  `,
+        }}
+      />
+    </View>
   );
 };
 

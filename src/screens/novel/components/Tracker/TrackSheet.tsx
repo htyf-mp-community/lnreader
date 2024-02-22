@@ -13,6 +13,7 @@ import { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/typ
 import { useTracker, useTrackedNovel } from '@hooks/persisted';
 import { UserListStatus } from '@services/Trackers';
 import { NovelInfo } from '@database/types';
+import Toast from 'react-native-toast-message';
 
 interface Props {
   bottomSheetRef: React.RefObject<BottomSheetModalMethods>;
@@ -73,7 +74,14 @@ const TrackSheet = ({ bottomSheetRef, novel, theme }: Props) => {
 
       setTrackChaptersDialog(false);
     } else {
-      ToastAndroid.show('Enter a valid number', ToastAndroid.SHORT);
+      // ToastAndroid.show('Enter a valid number', ToastAndroid.SHORT);
+      Toast.show({
+        text1: '提示',
+        text2: 'Enter a valid number',
+        type: 'info',
+        position: 'bottom',
+        autoHide: true,
+      });
     }
   };
 
