@@ -1,96 +1,139 @@
-import React from 'react';
-import { Dimensions, StatusBar } from 'react-native';
-import WebView, { WebViewProps } from 'react-native-webview';
-import RNFetchBlob from 'rn-fetch-blob';
-import isEqual from 'react-fast-compare';
+import { FC, useEffect, useMemo } from 'react';
+import {
+  Dimensions,
+  NativeEventEmitter,
+  NativeModules,
+  StatusBar,
+  View,
+} from 'react-native';
+import WebView, { WebViewNavigation } from 'react-native-webview';
+import color from 'color';
 
-import { useTheme } from '@hooks/useTheme';
-import { ChapterItem } from '@database/types';
-import { useReaderSettings, useSettingsV1 } from '@redux/hooks';
+import { useTheme } from '@hooks/persisted';
+import { ChapterInfo } from '@database/types';
 import { getString } from '@strings/translations';
 
-import { sourceManager } from '../../../sources/sourceManager';
-import { createHorizontalReaderPages } from './stringCreators/horizontalReaderPages';
-import { createStyles } from './stringCreators/createStyle';
-import { createSwipeGestures } from './stringCreators/createSwipeGestures';
+import { getPlugin } from '@plugins/pluginManager';
+import { MMKVStorage, getMMKVObject } from '@utils/mmkv/mmkv';
+import {
+  CHAPTER_GENERAL_SETTINGS,
+  CHAPTER_READER_SETTINGS,
+  ChapterGeneralSettings,
+  ChapterReaderSettings,
+  initialChapterGeneralSettings,
+  initialChapterReaderSettings,
+} from '@hooks/persisted/useSettings';
+import { getBatteryLevelSync } from 'react-native-device-info';
+import * as Speech from 'expo-speech';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { cssCode, jsCode } from './assets';
 
 type WebViewPostEvent = {
   type: string;
-  data?: { [key: string]: string };
+  data?: { [key: string]: string | number };
 };
 
 type WebViewReaderProps = {
-  chapterInfo: {
-    sourceId: number;
-    chapterId: string;
-    chapterUrl: string;
-    novelId: string;
-    novelUrl: string;
-    novelName: string;
-    chapterName: string;
-    bookmark: string;
+  data: {
+    novel: {
+      pluginId: string;
+    };
+    chapter: ChapterInfo;
   };
   html: string;
-  chapterName: string;
-  swipeGestures: boolean;
-  readerPages: boolean;
-  minScroll: React.MutableRefObject<number>;
-  pages: React.MutableRefObject<number>;
-  nextChapter: ChapterItem;
-  webViewRef: React.MutableRefObject<WebView>;
+  nextChapter: ChapterInfo;
+  webViewRef: React.RefObject<WebView>;
+  saveProgress(percentage: number): void;
   onPress(): void;
-  doSaveProgress(offSetY: number, percentage: number): void;
+  onLayout(): void;
   navigateToChapterBySwipe(name: string): void;
-  onWebViewNavigationStateChange(): void;
-  onLayout: WebViewProps['onLayout'];
-  scrollToSavedProgress: () => void;
+  onWebViewNavigationStateChange({ url }: WebViewNavigation): void;
 };
 
-const onClickWebViewPostMessage = (event: WebViewPostEvent) =>
-  "onClick='window.ReactNativeWebView.postMessage(`" +
-  JSON.stringify(event) +
-  "`)'";
-
-const WebViewReader: React.FC<WebViewReaderProps> = props => {
+const WebViewReader: FC<WebViewReaderProps> = props => {
   const {
-    chapterInfo,
+    data,
     html,
-    chapterName,
-    swipeGestures,
-    readerPages,
-    minScroll,
     nextChapter,
     webViewRef,
-    pages,
+    saveProgress,
     onPress,
     onLayout,
-    doSaveProgress,
     navigateToChapterBySwipe,
     onWebViewNavigationStateChange,
-    scrollToSavedProgress,
   } = props;
-
+  const {top, bottom} = useSafeAreaInsets()
+  const assetsUriPrefix = useMemo(
+    () => (__DEV__ ? 'http://localhost:8081/assets' : 'file:///android_asset'),
+    [],
+  );
+  const { RNDeviceInfo } = NativeModules;
+  const deviceInfoEmitter = new NativeEventEmitter(RNDeviceInfo);
   const theme = useTheme();
+  const { novel, chapter } = data;
+  const readerSettings = useMemo(
+    () =>
+      getMMKVObject<ChapterReaderSettings>(CHAPTER_READER_SETTINGS) ||
+      initialChapterReaderSettings,
+    [],
+  );
+  const { showScrollPercentage, swipeGestures, showBatteryAndTime } = useMemo(
+    () =>
+      getMMKVObject<ChapterGeneralSettings>(CHAPTER_GENERAL_SETTINGS) ||
+      initialChapterGeneralSettings,
+    [],
+  );
+  const batteryLevel = useMemo(getBatteryLevelSync, []);
+  const layoutHeight = Dimensions.get('window').height - top - bottom;
+  const layoutWidth = Dimensions.get('window').width;
+  const plugin = getPlugin(novel?.pluginId);
 
-  const readerSettings = useReaderSettings();
-  const { theme: backgroundColor } = readerSettings;
-  const { addChapterNameInReader = false } = useSettingsV1();
+  useEffect(() => {
+    const mmkvListener = MMKVStorage.addOnValueChangedListener(key => {
+      switch (key) {
+        case CHAPTER_READER_SETTINGS:
+          webViewRef.current?.injectJavaScript(
+            `reader.updateReaderSettings(${MMKVStorage.getString(
+              CHAPTER_READER_SETTINGS,
+            )})`,
+          );
+          break;
+        case CHAPTER_GENERAL_SETTINGS:
+          webViewRef.current?.injectJavaScript(
+            `reader.updateGeneralSettings(${MMKVStorage.getString(
+              CHAPTER_GENERAL_SETTINGS,
+            )})`,
+          );
+          break;
+      }
+    });
 
-  const layoutHeight = Dimensions.get('window').height;
-  const headers = sourceManager(chapterInfo.sourceId)?.headers;
+    const subscription = deviceInfoEmitter.addListener(
+      'RNDeviceInfo_batteryLevelDidChange',
+      (level: number) => {
+        webViewRef.current?.injectJavaScript(
+          `reader.updateBatteryLevel(${level})`,
+        );
+      },
+    );
+
+    return () => {
+      subscription.remove();
+      mmkvListener.remove();
+    };
+  });
   return (
+    <View style={{flex: 1, paddingTop: top}}>
     <WebView
       ref={webViewRef}
-      style={{ backgroundColor }}
+      style={{ backgroundColor: readerSettings.theme, width: layoutWidth }}
       allowFileAccess={true}
       originWhitelist={['*']}
       scalesPageToFit={true}
       showsVerticalScrollIndicator={false}
       onNavigationStateChange={onWebViewNavigationStateChange}
-      nestedScrollEnabled={true}
       javaScriptEnabled={true}
-      onLoad={scrollToSavedProgress}
-      onLayout={onLayout}
+      onLayout={async () => onLayout()}
       onMessage={ev => {
         const event: WebViewPostEvent = JSON.parse(ev.nativeEvent.data);
         switch (event.type) {
@@ -103,36 +146,31 @@ const WebViewReader: React.FC<WebViewReaderProps> = props => {
           case 'prev':
             navigateToChapterBySwipe('SWIPE_RIGHT');
             break;
-          case 'imgfile':
+          case 'error-img':
             if (event.data && typeof event.data === 'string') {
-              RNFetchBlob.fetch('get', event.data, headers).then(res => {
-                const base64 = res.base64();
+              plugin?.fetchImage(event.data).then(base64 => {
                 webViewRef.current?.injectJavaScript(
-                  `document.querySelector("img[delayed-src='${event.data}']").src="data:image/jpg;base64,${base64}";
-                  document.querySelector("img[delayed-src='${event.data}']").classList.remove("load-icon");
-                  sendHeight(500);`,
+                  `document.querySelector("img[error-src='${event.data}']").src="data:image/jpg;base64,${base64}"`,
                 );
               });
             }
             break;
-          case 'scrollend':
-            if (event.data) {
-              const offSetY = Number(event.data?.offSetY);
-              const percentage = Math.round(Number(event.data?.percentage));
-
-              doSaveProgress(offSetY, percentage);
+          case 'save':
+            if (event.data && typeof event.data === 'number') {
+              saveProgress(event.data);
             }
             break;
-          case 'height':
-            if (event.data) {
-              const contentHeight = Math.round(Number(event.data));
-              minScroll.current = (layoutHeight / contentHeight) * 100;
+          case 'speak':
+            if (event.data && typeof event.data === 'string') {
+              Speech.speak(event.data, {
+                onDone() {
+                  webViewRef.current?.injectJavaScript('tts.next?.()');
+                },
+              });
             }
             break;
-          case 'pages':
-            if (event.data) {
-              pages.current = Number(event.data);
-            }
+          case 'stop-speak':
+            Speech.stop();
             break;
         }
       }}
@@ -141,131 +179,118 @@ const WebViewReader: React.FC<WebViewReaderProps> = props => {
                 <html>
                   <head>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-                    ${createStyles(
-                      StatusBar.currentHeight ?? 0,
-                      readerSettings,
-                      theme,
-                      layoutHeight,
-                      readerPages,
-                    )}
-                    
                     <style>
-                      ${readerSettings.customCSS}
-                      
+                    :root {
+                      --StatusBar-currentHeight: ${StatusBar.currentHeight};
+                      --readerSettings-theme: ${readerSettings.theme};
+                      --readerSettings-padding: ${readerSettings.padding}%;
+                      --readerSettings-textSize: ${readerSettings.textSize}px;
+                      --readerSettings-textColor: ${readerSettings.textColor};
+                      --readerSettings-textAlign: ${readerSettings.textAlign};
+                      --readerSettings-lineHeight: ${readerSettings.lineHeight};
+                      --readerSettings-fontFamily: ${readerSettings.fontFamily};
+                      --theme-primary: ${theme.primary};
+                      --theme-onPrimary: ${theme.onPrimary};
+                      --theme-secondary: ${theme.secondary};
+                      --theme-tertiary: ${theme.tertiary};
+                      --theme-onSecondary: ${theme.onSecondary};
+                      --theme-surface: ${theme.surface};
+                      --theme-surface-0-9: ${color(theme.surface)
+                        .alpha(0.9)
+                        .toString()};
+                      --theme-onSurface:${theme.onSurface};
+                      --theme-outline: ${theme.outline};
+                      --chapterCtn-height: ${layoutHeight - 140};
+                      }
                       @font-face {
                         font-family: ${readerSettings.fontFamily};
-                        src: url("file:///android_asset/fonts/${
-                          readerSettings.fontFamily
-                        }.ttf");
+                        src: url("${assetsUriPrefix}/fonts/${
+          readerSettings.fontFamily
+        }.ttf");
                       }
                     </style>
-                  </head>
-                  <body id='sourceId-${chapterInfo.sourceId}'>
-                    <div class="chapterCtn" ${
-                      !readerPages &&
-                      onClickWebViewPostMessage({
-                        type: 'hide',
-                      })
-                    }> 
-                      <div id="left"></div>
-                      <div id="right"></div>
-                      <div id="middle" ${
-                        readerPages &&
-                        onClickWebViewPostMessage({
-                          type: 'hide',
-                        })
-                      }></div>
-                      <chapter 
-                        data-page=0
-                        data-novel-id='${chapterInfo.novelId}'
-                        data-chapter-id='${chapterInfo.chapterId}'
-                      >
-                        ${
-                          addChapterNameInReader
-                            ? `<h3>${chapterName}</h3>`
-                            : ''
-                        }
-                        ${html}
-                        <p id="spacer"></p>
-
-                      </chapter>
-                      <div id="infoContainer" class="hide">
-                        <div class="infoText">
-                          ${getString(
-                            'readerScreen.finished',
-                          )}: ${chapterName?.trim()}
-                        </div>
-                          ${
-                            nextChapter
-                              ? `<button class="nextButton"  
-                                ${onClickWebViewPostMessage({
-                                  type: 'next',
-                                })}>
-                                  Next: ${nextChapter.chapterName}
-                                </button>`
-                              : `<div class="infoText">${getString(
-                                  'readerScreen.noNextChapter',
-                                )}</div>`
-                          }
-                      </div>
-                     
-                    </div>
-                    <script>
-                    if(!document.querySelector("input[offline]") && ${!!headers}){
-                      document.querySelectorAll("img").forEach(img => {
-                        window.ReactNativeWebView.postMessage(JSON.stringify({type:"imgfile",data:img.getAttribute("delayed-src")}));
-                      });
-                    }
-                    var scrollTimeout;
-                    ${!readerPages} && window.addEventListener("scroll", (event) => {
-                      window.clearTimeout( scrollTimeout );
-                      scrollTimeout = setTimeout(() => {
-                        window.ReactNativeWebView.postMessage(
-                          JSON.stringify(
-                            {
-                              type:"scrollend",
-                              data:{
-                                offSetY: window.pageYOffset,
-                                percentage: (window.pageYOffset+${layoutHeight})/document.body.scrollHeight*100,
-                              }
-                            }
-                          )
-                        );
-                      }, 100);
-                    });
-                    let sendHeightTimeout;
-                    const sendHeight = (timeOut) => {
-                      clearTimeout(sendHeightTimeout);
-                      sendHeightTimeout = setTimeout(
-                        window.ReactNativeWebView.postMessage(
-                          JSON.stringify({type:"height",data: document.body.scrollHeight})
-                        ), timeOut
-                      );
-                    }
-                    sendHeight(1000);
+                    <style>${decodeURIComponent(cssCode)}</style>
+                    <style>${readerSettings.customCSS}</style>
+                    <script async>
+                      var initSettings = {
+                        showScrollPercentage: ${showScrollPercentage},
+                        swipeGestures: ${swipeGestures},
+                        showBatteryAndTime: ${showBatteryAndTime},
+                      }
+                      var batteryLevel = ${batteryLevel};
+                      var autoSaveInterval = 2222;
                     </script>
-                    
-                    ${swipeGestures ? createSwipeGestures() : ''}
+                  </head>
+                  <body>
+                    <div class="chapterCtn" onclick="reader.post({type:'hide'})">
+                      <chapter 
+                        data-plugin-id='${novel.pluginId}'
+                        data-novel-id='${chapter.novelId}'
+                        data-chapter-id='${chapter.id}'
+                      >
+                        ${html}
+                      </chapter>
+                      <div class="d-none" id="ToolWrapper">
+                          <div id="TextToSpeech" draggable="true">
+                            <span class="tts">
+                              <svg xmlns="http://www.w3.org/2000/svg" height="40" viewBox="0 -960 960 960" width="40"><path d="M560-131v-82q90-26 145-100t55-168q0-94-55-168T560-749v-82q124 28 202 125.5T840-481q0 127-78 224.5T560-131ZM120-360v-240h160l200-200v640L280-360H120Zm440 40v-322q47 22 73.5 66t26.5 96q0 51-26.5 94.5T560-320Z"/></svg>
+                            </span>
+                          </div>
+                          <div id="ScrollBar"></div>
+                      </div>
+
+                      <div id="reader-footer-wrapper">
+                          <div id="reader-footer">
+                              <div id="reader-battery" class="reader-footer-item"></div>
+                              <div id="reader-percentage" class="reader-footer-item"></div>
+                              <div id="reader-time" class="reader-footer-item"></div>
+                          </div>
+                      </div>
+                    </div>
+                    <div class="infoText">
+                      ${getString(
+                        'readerScreen.finished',
+                      )}: ${chapter.name.trim()}
+                    </div>
+                    ${
+                      nextChapter
+                        ? `<button class="nextButton" onclick="reader.post({type:'next'})">
+                            ${getString('readerScreen.nextChapter', {
+                              name: nextChapter.name,
+                            })}
+                          </button>`
+                        : `<div class="infoText">
+                          ${getString('readerScreen.noNextChapter')}
+                        </div>`
+                    }
+                    </body>
+                    <script>
+                    try {
+                      ${decodeURIComponent(jsCode)}
+                    } catch (error) {
+                      alert(error)
+                    }
+                    </script>
                     <script>
                       async function fn(){
-                        // Position important to prevent layout bugs
-                        ${readerPages && createHorizontalReaderPages()}
-                        let novelName = "${chapterInfo.novelName}";
-                        let chapterName = "${chapterInfo.chapterName}";
-                        let sourceId =${chapterInfo.sourceId};
-                        let chapterId =${chapterInfo.chapterId};
-                        let novelId =${chapterInfo.novelId};
-                        let html = document.querySelector("chapter").innerHTML;
-                        
-                          ${readerSettings.customJS}
+                        ${readerSettings.customJS}
+                        // scroll to saved position
+                        reader.refresh();
+                        window.scrollTo({
+                          top: reader.chapterHeight * ${
+                            chapter.progress
+                          } / 100 - reader.layoutHeight,
+                          behavior: 'smooth',
+                        });
                       }
                       document.addEventListener("DOMContentLoaded", fn);
                     </script>
-                  </body>
                 </html>
                 `,
       }}
     />
+    </View>
   );
 };
-export default React.memo(WebViewReader, isEqual);
+
+export default WebViewReader;

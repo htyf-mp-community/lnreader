@@ -61,7 +61,12 @@ const Chapter = ({ route, navigation }: ChapterScreenProps) => {
   return (
     <Drawer
       ref={drawerRef as any}
-      openDrawerOffset={300}
+      openDrawerOffset={0.3}
+      styles={{
+        drawer: {
+        
+        }
+      }}
       content={<ChapterDrawer
         route={route}
         navigation={navigation}
