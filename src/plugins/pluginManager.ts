@@ -12,7 +12,6 @@ import { isUrlAbsolute } from './helpers/isAbsoluteUrl';
 import { fetchApi, fetchFile, fetchText } from './helpers/fetch';
 import { defaultCover } from './helpers/constants';
 import { encode, decode } from 'urlencode';
-import { getString } from '@strings/translations';
 
 const pluginsFilePath = PluginDownloadFolder + '/plugins.json';
 
@@ -55,9 +54,13 @@ const serializePlugin = async (
   rawCode: string,
   installed: boolean,
 ) => {
-  if (!serializedPlugins && (await RNFS.exists(pluginsFilePath))) {
-    const content = await RNFS.readFile(pluginsFilePath);
-    serializedPlugins = JSON.parse(content);
+  if (!serializedPlugins) {
+    if (await RNFS.exists(pluginsFilePath)) {
+      const content = await RNFS.readFile(pluginsFilePath);
+      serializedPlugins = JSON.parse(content);
+    } else {
+      serializedPlugins = {};
+    }
   }
   if (installed) {
     serializedPlugins[pluginId] = rawCode;
@@ -70,8 +73,8 @@ const serializePlugin = async (
   await RNFS.writeFile(pluginsFilePath, JSON.stringify(serializedPlugins));
 };
 
-const deserializePlugins = async () => {
-  await RNFS.readFile(pluginsFilePath)
+const deserializePlugins = () => {
+  return RNFS.readFile(pluginsFilePath)
     .then(content => {
       serializedPlugins = JSON.parse(content);
       for (const script of Object.values(serializedPlugins)) {
@@ -125,17 +128,8 @@ const fetchPlugins = async () => {
   const githubRepository = 'lnreader-sources';
 
   const availablePlugins: Record<Language, Array<PluginItem>> = await fetch(
-    // `https://raw.githubusercontent.com/${githubUsername}/${githubRepository}/beta-dist/.dist/plugins.min.json`,
     `https://raw.gitmirror.com/${githubUsername}/${githubRepository}/beta-dist/.dist/plugins.min.json?time=${Date.now}`,
-  )
-    .then(res => res.json())
-    .catch(() => {
-      throw new Error(
-        `${getString(
-          'browseScreen.pluginsHostError',
-        )}: ${githubUsername}/${githubRepository}`,
-      );
-    });
+  ).then(res => res.json());
   return availablePlugins;
 };
 

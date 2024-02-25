@@ -94,7 +94,18 @@ const insertLocalChapter = (
         ],
         async (txObj, resultSet) => {
           if (resultSet.insertId) {
-            let chapterText = await RNFS.readFile(path);
+            let chapterText: string = '';
+            try {
+              path = decodeURI(path);
+            } catch {
+              // nothing to do
+            }
+            await RNFS.readFile(path)
+              .then(r => (chapterText = r))
+              .catch(e => reject(e));
+            if (!chapterText) {
+              return;
+            }
             const staticPaths: string[] = [];
             const novelDir = NovelDownloadFolder + '/local/' + novelId;
             const epubContentDir = path.replace(/[^\\\/]+$/, '');
