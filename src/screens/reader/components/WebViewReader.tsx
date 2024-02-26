@@ -123,7 +123,7 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
     };
   });
   return (
-    <View style={{flex: 1, paddingTop: top}}>
+    <View style={{flex: 1}}>
     <WebView
       ref={webViewRef}
       style={{ backgroundColor: readerSettings.theme, width: layoutWidth }}
@@ -181,7 +181,7 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
                     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
                     <style>
                     :root {
-                      --StatusBar-currentHeight: ${StatusBar.currentHeight};
+                      --StatusBar-currentHeight: ${top};
                       --readerSettings-theme: ${readerSettings.theme};
                       --readerSettings-padding: ${readerSettings.padding}%;
                       --readerSettings-textSize: ${readerSettings.textSize}px;
