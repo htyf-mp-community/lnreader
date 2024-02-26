@@ -1,6 +1,12 @@
 import { MMKV } from 'react-native-mmkv';
+import ReactNativeBlobUtil from 'react-native-blob-util'
 
-export const MMKVStorage = new MMKV();
+const MMKV_KEY = `app_lnreader_996_storage`;
+
+export const MMKVStorage = new MMKV({
+  id: MMKV_KEY,
+  path: `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/${MMKV_KEY}`,
+});
 
 export function getMMKVObject<T>(key: string) {
   const data = MMKVStorage.getString(key);
