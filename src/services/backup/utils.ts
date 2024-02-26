@@ -17,7 +17,9 @@ import {
 } from '@database/queries/CategoryQueries';
 import { BackupCategory } from '@database/types';
 import { BackupEntryName } from './types';
+import { AppDownloadFolder } from '@utils/constants/download';
 
+const AppDownloadUriPrefix = 'file://' + AppDownloadFolder;
 export const CACHE_DIR_PATH = RNFS.ExternalCachesDirectoryPath + '/BackupData';
 
 const backupMMKVData = () => {
@@ -73,6 +75,7 @@ export const prepareBackupData = async (cacheDirPath: string) => {
         JSON.stringify({
           chapters: chapters,
           ...novel,
+          cover: novel.cover?.replace(AppDownloadUriPrefix, ''),
         }),
       );
     }
@@ -114,9 +117,13 @@ export const restoreData = async (cacheDirPath: string) => {
   await RNFS.readDir(novelDirPath).then(async items => {
     for (const item of items) {
       if (item.isFile()) {
-        await RNFS.readFile(item.path).then(content =>
-          _restoreNovelAndChapters(JSON.parse(content)),
-        );
+        await RNFS.readFile(item.path).then(content => {
+          const backupNovel = JSON.parse(content);
+          if (!backupNovel.cover?.startsWith('http')) {
+            backupNovel.cover = AppDownloadUriPrefix + backupNovel.cover;
+          }
+          return _restoreNovelAndChapters(backupNovel);
+        });
       }
     }
   });
