@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import {
@@ -38,6 +38,7 @@ import { Row } from '@components/Common';
 import { LibraryScreenProps } from '@navigators/types';
 import { NovelInfo } from '@database/types';
 import { importEpub } from '@services/epub/import';
+import { useFocusEffect } from '@react-navigation/native';
 
 type State = NavigationState<{
   key: string;
@@ -45,6 +46,7 @@ type State = NavigationState<{
 }>;
 
 const LibraryScreen = ({ navigation }: LibraryScreenProps) => {
+  const [time, setTime] = useState(Date.now())
   const theme = useTheme();
   const { searchText, setSearchText, clearSearchbar } = useSearch();
   const {
@@ -139,6 +141,10 @@ const LibraryScreen = ({ navigation }: LibraryScreenProps) => {
     setFalse: closeSetCategoryModal,
   } = useBoolean();
 
+  useEffect(debounce(() => {
+    setTime(Date.now())
+  }, 500), [])
+
   return (
     <>
       <SearchbarV2
@@ -193,6 +199,7 @@ const LibraryScreen = ({ navigation }: LibraryScreenProps) => {
         />
       )}
       <TabView
+        key={time}
         lazy
         navigationState={{
           index,

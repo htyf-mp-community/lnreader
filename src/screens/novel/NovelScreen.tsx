@@ -579,7 +579,7 @@ const Novel = ({ route, navigation }: NovelScreenProps) => {
               </Animated.View>
             )}
           </Portal>
-          <View style={{ minHeight: 3, flex: 1 }}>
+          <View style={{ minHeight: 3, flex: 1}}>
             <FlashList
               style={{
                 width: '100%',
