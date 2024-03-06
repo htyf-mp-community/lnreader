@@ -611,5 +611,8 @@
       "eslint --fix",
       "prettier --check"
     ]
+  },
+  "engines": {
+    "node": ">=16"
   }
 }
