@@ -110,7 +110,7 @@ const NovelInfoHeader = ({
                 {novel.name}
               </NovelTitle>
             </Row>
-            {novel.author && (
+            {novel.author ? (
               <Row>
                 <MaterialCommunityIcons
                   name="fountain-pen-tip"
@@ -120,8 +120,8 @@ const NovelInfoHeader = ({
                 />
                 <NovelInfo theme={theme}>{novel.author}</NovelInfo>
               </Row>
-            )}
-            {novel.artist && (
+            ) : null}
+            {novel.artist ? (
               <Row>
                 <MaterialCommunityIcons
                   name="palette-outline"
@@ -131,7 +131,7 @@ const NovelInfoHeader = ({
                 />
                 <NovelInfo theme={theme}>{novel.artist}</NovelInfo>
               </Row>
-            )}
+            ) : null}
             <Row>
               <MaterialCommunityIcons
                 name={getStatusIcon(novel.status)}

@@ -108,7 +108,7 @@ const LibraryScreen = ({ navigation }: LibraryScreenProps) => {
         renderLabel={({ route, color }) => (
           <Row>
             <Text style={{ color, fontWeight: '600' }}>{route.title}</Text>
-            {showNumberOfNovels && (
+            {showNumberOfNovels ? (
               <View
                 style={[
                   styles.badgeCtn,
@@ -121,7 +121,7 @@ const LibraryScreen = ({ navigation }: LibraryScreenProps) => {
                   {(route as any)?.novels.length}
                 </Text>
               </View>
-            )}
+            ) : null}
           </Row>
         )}
         inactiveColor={theme.secondary}
@@ -182,14 +182,14 @@ const LibraryScreen = ({ navigation }: LibraryScreenProps) => {
         }
         theme={theme}
       />
-      {downloadedOnlyMode && (
+      {downloadedOnlyMode ? (
         <Banner
           icon="cloud-off-outline"
           label={getString('moreScreen.downloadOnly')}
           theme={theme}
         />
-      )}
-      {incognitoMode && (
+      ) : null}
+      {incognitoMode ? (
         <Banner
           icon="incognito"
           label={getString('moreScreen.incognitoMode')}
@@ -197,7 +197,7 @@ const LibraryScreen = ({ navigation }: LibraryScreenProps) => {
           backgroundColor={theme.tertiary}
           textColor={theme.onTertiary}
         />
-      )}
+      ) : null}
       <TabView
         key={time}
         lazy
@@ -242,31 +242,31 @@ const LibraryScreen = ({ navigation }: LibraryScreenProps) => {
         initialLayout={{ width: layout.width }}
       />
       {useLibraryFAB &&
-        !isHistoryLoading &&
-        history &&
-        history.length !== 0 &&
-        !error && (
-          <FAB
-            style={[
-              styles.fab,
-              { backgroundColor: theme.primary, marginRight: rightInset + 16 },
-            ]}
-            color={theme.onPrimary}
-            uppercase={false}
-            label={getString('common.resume')}
-            icon="play"
-            onPress={() => {
-              navigation.navigate('Chapter', {
-                novel: {
-                  path: history[0].novelPath,
-                  pluginId: history[0].pluginId,
-                  name: history[0].novelName,
-                } as NovelInfo,
-                chapter: history[0],
-              });
-            }}
-          />
-        )}
+      !isHistoryLoading &&
+      history &&
+      history.length !== 0 &&
+      !error ? (
+        <FAB
+          style={[
+            styles.fab,
+            { backgroundColor: theme.primary, marginRight: rightInset + 16 },
+          ]}
+          color={theme.onPrimary}
+          uppercase={false}
+          label={getString('common.resume')}
+          icon="play"
+          onPress={() => {
+            navigation.navigate('Chapter', {
+              novel: {
+                path: history[0].novelPath,
+                pluginId: history[0].pluginId,
+                name: history[0].novelName,
+              } as NovelInfo,
+              chapter: history[0],
+            });
+          }}
+        />
+      ) : null}
       <SetCategoryModal
         novelIds={selectedNovelIds}
         closeModal={closeSetCategoryModal}

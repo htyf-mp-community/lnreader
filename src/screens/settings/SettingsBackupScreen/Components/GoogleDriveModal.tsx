@@ -300,12 +300,12 @@ export default function GoogleDriveModal({
               }
             }}
           >
-            {user && (
+            {user ? (
               <Image
                 source={{ uri: user?.user.photo || '' }}
                 style={styles.avatar}
               />
-            )}
+            ) : null}
           </TouchableOpacity>
         </View>
         {renderModal()}

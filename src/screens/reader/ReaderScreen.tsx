@@ -359,7 +359,7 @@ export const ChapterContent = ({
         onWebViewNavigationStateChange={onWebViewNavigationStateChange}
       />
       <ReaderBottomSheetV2 bottomSheetRef={readerSheetRef} />
-      {!hidden && (
+      {!hidden ? (
         <>
           <ReaderAppbar
             novelName={novel.name}
@@ -381,7 +381,7 @@ export const ChapterContent = ({
             openDrawer={openDrawer}
           />
         </>
-      )}
+      ) : null}
     </>
   );
 };
