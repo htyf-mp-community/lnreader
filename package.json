@@ -1,6 +1,6 @@
 {
   "name": "lnreader",
-  "version": "2.0.14",
+  "version": "2.0.15",
   "private": true,
   "scripts": {
     "run:scripts": "node ./scripts/index.js",
