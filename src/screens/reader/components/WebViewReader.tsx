@@ -26,7 +26,7 @@ import {
 import { getBatteryLevelSync } from 'react-native-device-info';
 import * as Speech from 'expo-speech';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { cssCode, jsCode } from './assets';
+import { cssCode, jsCode, jsTextVibeCode } from './assets';
 import * as Clipboard from 'expo-clipboard';
 import { showToast } from '@utils/showToast';
 
@@ -79,7 +79,13 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
       initialChapterReaderSettings,
     [],
   );
-  const { showScrollPercentage, swipeGestures, showBatteryAndTime } = useMemo(
+  const {
+    showScrollPercentage,
+    swipeGestures,
+    showBatteryAndTime,
+    verticalSeekbar,
+    bionicReading,
+  } = useMemo(
     () =>
       getMMKVObject<ChapterGeneralSettings>(CHAPTER_GENERAL_SETTINGS) ||
       initialChapterGeneralSettings,
@@ -229,6 +235,8 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
                         showScrollPercentage: ${showScrollPercentage},
                         swipeGestures: ${swipeGestures},
                         showBatteryAndTime: ${showBatteryAndTime},
+                        verticalSeekbar: ${verticalSeekbar},
+                        bionicReading: ${bionicReading},
                       }
                       var batteryLevel = ${batteryLevel};
                       var autoSaveInterval = 2222;
@@ -275,6 +283,13 @@ const WebViewReader: FC<WebViewReaderProps> = props => {
                         </div>`
                     }
                     </body>
+                    <script>
+                    try {
+                      ${decodeURIComponent(jsTextVibeCode)}
+                    } catch (error) {
+                      alert(error)
+                    }
+                    </script>
                     <script>
                     try {
                       ${decodeURIComponent(jsCode)}
