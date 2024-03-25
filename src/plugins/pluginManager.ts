@@ -130,7 +130,7 @@ const fetchPlugins = (): Promise<Record<Language, Array<PluginItem>>> => {
   const githubRepository = 'lnreader-sources';
 
   return fetch(
-    `https://raw.gitmirror.com/${githubUsername}/${githubRepository}/beta-dist/.dist/plugins.min.json?time=${Date.now}`,
+    `https://raw.gitmirror.com/${githubUsername}/${githubRepository}/plugins/v2.0.0/.dist/plugins.min.json?time=${Date.now}`,
   ).then(res => res.json());
 };
 
