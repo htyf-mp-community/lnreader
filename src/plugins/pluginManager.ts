@@ -1,7 +1,6 @@
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import { PluginDownloadFolder } from '@utils/constants/download';
 import { newer } from '@utils/compareVersion';
-import { Language } from '@utils/constants/languages';
 
 // packages for plugins
 import { load } from 'cheerio';
@@ -13,10 +12,13 @@ import { isUrlAbsolute } from './helpers/isAbsoluteUrl';
 import { fetchApi, fetchFile, fetchProto, fetchText } from './helpers/fetch';
 import { defaultCover } from './helpers/constants';
 import { encode, decode } from 'urlencode';
+import { Parser } from 'htmlparser2';
+import TextFile from '@native/TextFile';
 
 const pluginsFilePath = PluginDownloadFolder + '/plugins.json';
 
 const packages: Record<string, any> = {
+  'htmlparser2': { Parser },
   'cheerio': { load },
   'dayjs': dayjs,
   'qs': qs,
@@ -124,13 +126,13 @@ const updatePlugin = async (plugin: PluginItem) => {
   return installPlugin(plugin.url);
 };
 
-const fetchPlugins = (): Promise<Record<Language, Array<PluginItem>>> => {
+const fetchPlugins = (): Promise<PluginItem[]> => {
   // plugins host
   const githubUsername = 'htyf-mp-community';
   const githubRepository = 'lnreader-sources';
-
+  const pluginsTag = 'v2.0.0';
   return fetch(
-    `https://raw.gitmirror.com/${githubUsername}/${githubRepository}/plugins/v2.0.0/.dist/plugins.min.json?time=${Date.now}`,
+    `https://raw.gitmirror.com/${githubUsername}/${githubRepository}/plugins/${pluginsTag}/.dist/plugins.min.json?time=${Date.now}`,
   ).then(res => res.json());
 };
 
