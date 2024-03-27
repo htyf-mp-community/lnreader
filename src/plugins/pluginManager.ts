@@ -130,7 +130,7 @@ const fetchPlugins = (): Promise<PluginItem[]> => {
   // plugins host
   const githubUsername = 'htyf-mp-community';
   const githubRepository = 'lnreader-sources';
-  const pluginsTag = 'v2.0.0';
+  const pluginsTag = 'v2.1.0';
   return fetch(
     `https://raw.gitmirror.com/${githubUsername}/${githubRepository}/plugins/${pluginsTag}/.dist/plugins.min.json?time=${Date.now}`,
   ).then(res => res.json());
