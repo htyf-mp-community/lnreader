@@ -41,7 +41,7 @@ export const insertChapters = async (
           index,
         ],
         (txObj, { insertId }) => {
-          if (!insertId) {
+          if (!insertId || insertId < 0) {
             tx.executeSql(
               `
                 UPDATE Chapter SET
