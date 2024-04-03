@@ -51,14 +51,15 @@ export const insertNovelAndChapters = async (
       promises.push(
         fetchImage(pluginId, sourceNovel.cover).then(base64 => {
           if (base64) {
-            RNFS.writeFile(novelCoverUri, base64, 'base64').then(() => {
-              db.transaction(tx => {
-                tx.executeSql('UPDATE Novel SET cover = ? WHERE id = ?', [
-                  novelCoverUri,
-                  novelId,
-                ]);
-              });
-            });
+            /** base64图有问题 后面再改一下 */
+            // RNFS.writeFile(novelCoverUri, base64, 'base64').then(() => {
+            //   db.transaction(tx => {
+            //     tx.executeSql('UPDATE Novel SET cover = ? WHERE id = ?', [
+            //       novelCoverUri,
+            //       novelId,
+            //     ]);
+            //   });
+            // });
           }
         }),
       );
