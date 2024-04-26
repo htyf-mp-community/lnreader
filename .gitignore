@@ -79,6 +79,9 @@ src/sources/en/generators/
 # jenv
 .java-version
 
+*.lockb
+
+
 # 只保留app.json/dist.dgz
 dgz/*
 !dgz/build
