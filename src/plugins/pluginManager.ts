@@ -1,4 +1,5 @@
 import * as RNFS from '@dr.pogodin/react-native-fs';
+import { reverse, uniqBy } from 'lodash';
 import { PluginDownloadFolder } from '@utils/constants/download';
 import { newer } from '@utils/compareVersion';
 
@@ -14,6 +15,7 @@ import { defaultCover } from './helpers/constants';
 import { encode, decode } from 'urlencode';
 import { Parser } from 'htmlparser2';
 import TextFile from '@native/TextFile';
+import { getRepositoriesFromDb } from '@database/queries/RepositoryQueries';
 
 const pluginsFilePath = PluginDownloadFolder + '/plugins.json';
 
@@ -126,14 +128,25 @@ const updatePlugin = async (plugin: PluginItem) => {
   return installPlugin(plugin.url);
 };
 
-const fetchPlugins = (): Promise<PluginItem[]> => {
-  // plugins host
-  const githubUsername = 'htyf-mp-community';
-  const githubRepository = 'lnreader-sources';
-  const pluginsTag = 'v2.1.0';
-  return fetch(
-    `https://raw.gitmirror.com/${githubUsername}/${githubRepository}/plugins/${pluginsTag}/.dist/plugins.min.json?time=${Date.now}`,
-  ).then(res => res.json());
+const fetchPlugins = async (): Promise<PluginItem[]> => {
+  const allPlugins: PluginItem[] = [];
+  const allRepositories = await getRepositoriesFromDb();
+  if (!allRepositories.length) {
+    const githubUsername = 'htyf-mp-community';
+    const githubRepository = 'lnreader-sources';
+    const pluginsTag = 'v2.1.0';
+    allRepositories.unshift({
+      id: -1,
+      url: `https://raw.gitmirror.com/${githubUsername}/${githubRepository}/plugins/${pluginsTag}/.dist/plugins.min.json?time=${Date.now}`,
+    })
+  }
+  const repoPluginsRes = await Promise.all(
+    allRepositories.map(({ url }) => fetch(url).then(res => res.json())),
+  );
+
+  repoPluginsRes.forEach(repoPlugins => allPlugins.push(...repoPlugins));
+
+  return uniqBy(reverse(allPlugins), 'id');
 };
 
 const getPlugin = (pluginId: string) => plugins[pluginId];
