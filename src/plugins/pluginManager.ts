@@ -16,6 +16,7 @@ import { encode, decode } from 'urlencode';
 import { Parser } from 'htmlparser2';
 import TextFile from '@native/TextFile';
 import { getRepositoriesFromDb } from '@database/queries/RepositoryQueries';
+import { showToast } from '@utils/showToast';
 
 const pluginsFilePath = PluginDownloadFolder + '/plugins.json';
 
@@ -140,11 +141,17 @@ const fetchPlugins = async (): Promise<PluginItem[]> => {
       url: `https://raw.gitmirror.com/${githubUsername}/${githubRepository}/plugins/${pluginsTag}/.dist/plugins.min.json?time=${Date.now}`,
     })
   }
-  const repoPluginsRes = await Promise.all(
+  const repoPluginsRes = await Promise.allSettled(
     allRepositories.map(({ url }) => fetch(url).then(res => res.json())),
   );
 
-  repoPluginsRes.forEach(repoPlugins => allPlugins.push(...repoPlugins));
+  repoPluginsRes.forEach(repoPlugins => {
+    if (repoPlugins.status === 'fulfilled') {
+      allPlugins.push(...repoPlugins.value);
+    } else {
+      showToast(repoPlugins.reason.toString());
+    }
+  });
 
   return uniqBy(reverse(allPlugins), 'id');
 };
