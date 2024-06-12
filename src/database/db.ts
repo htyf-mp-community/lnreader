@@ -19,10 +19,13 @@ import {
 
 const dbName = 'lnreader.db';
 
-const db = SQLite.openDatabase(dbName);
+let db: SQLite.SQLiteDatabase;
 
-export const createTables = () => {
-  db.exec([{ sql: 'PRAGMA foreign_keys = ON', args: [] }], false, () => {});
+export const createTables = async () => {
+  if (!db) {
+    db = await SQLite.openDatabaseAsync(dbName);
+  }
+  db.execAsync('PRAGMA foreign_keys = ON', false, () => {});
   db.transaction(tx => {
     tx.executeSql(createNovelTableQuery);
     tx.executeSql(createCategoriesTableQuery);

@@ -335,7 +335,7 @@ export const ChapterContent = ({
             title: 'WebView',
             onPress: () =>
               navigation.navigate('WebviewScreen', {
-                name: `${chapter.name} | ${novel.name}`,
+                name: novel.name,
                 url: chapter.path,
                 pluginId: novel.pluginId,
               }),
