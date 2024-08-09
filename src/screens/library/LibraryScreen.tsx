@@ -39,6 +39,7 @@ import { LibraryScreenProps } from '@navigators/types';
 import { NovelInfo } from '@database/types';
 import { importEpub } from '@services/epub/import';
 import { useFocusEffect } from '@react-navigation/native';
+import { updateLibrary } from '@services/updates';
 
 type State = NavigationState<{
   key: string;
@@ -140,11 +141,20 @@ const LibraryScreen = ({ navigation }: LibraryScreenProps) => {
     setTrue: showSetCategoryModal,
     setFalse: closeSetCategoryModal,
   } = useBoolean();
-
   useEffect(debounce(() => {
     setTime(Date.now())
   }, 500), [])
-
+  function openRandom() {
+    const novels = library[index].novels;
+    const randomNovel = novels[Math.floor(Math.random() * novels.length)];
+    if (randomNovel) {
+      navigation.navigate('Novel', {
+        name: randomNovel.name,
+        path: randomNovel.path,
+        pluginId: randomNovel.pluginId,
+      });
+    }
+  }
   return (
     <>
       <SearchbarV2
@@ -171,15 +181,31 @@ const LibraryScreen = ({ navigation }: LibraryScreenProps) => {
               ]
             : [
                 {
-                  iconName: 'book-arrow-up-outline',
-                  onPress: importEpub,
-                },
-                {
                   iconName: 'filter-variant',
                   onPress: () => bottomSheetRef.current?.present(),
                 },
               ]
         }
+        menuButtons={[
+          {
+            title: getString('libraryScreen.extraMenu.updateLibrary'),
+            onPress: updateLibrary,
+          },
+          {
+            title: getString('libraryScreen.extraMenu.updateCategory'),
+            onPress: () =>
+              //2 = local category
+              library[index].id !== 2 && updateLibrary(library[index].id),
+          },
+          {
+            title: getString('libraryScreen.extraMenu.importEpub'),
+            onPress: importEpub,
+          },
+          {
+            title: getString('libraryScreen.extraMenu.openRandom'),
+            onPress: openRandom,
+          },
+        ]}
         theme={theme}
       />
       {downloadedOnlyMode ? (
