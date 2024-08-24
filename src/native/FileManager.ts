@@ -8,15 +8,21 @@ interface ReadDirResult {
 
 interface FileManagerInterface {
   writeFile: (path: string, content: string) => Promise<void>;
-  readFile: (path: string) => Promise<string>;
+  readFile: (path: string) => string;
   resolveExternalContentUri: (uriString: string) => Promise<string | null>;
   copyFile: (sourcePath: string, destPath: string) => Promise<void>;
   moveFile: (sourcePath: string, destPath: string) => Promise<void>;
   exists: (filePath: string) => Promise<boolean>;
-  mkdir: (filePath: string) => Promise<void>; // create parents;
-  unlink: (filePath: string) => Promise<void>; // remove recursively
-  readDir: (dirPath: string) => Promise<ReadDirResult[]>; // file/sub-folder names
-  pickFolder: () => Promise<string | null>; // return path of folderc
+  /**
+   * @description create parents, and do nothing if exists;
+   */
+  mkdir: (filePath: string) => Promise<void>;
+  /**
+   * @description remove recursively
+   */
+  unlink: (filePath: string) => Promise<void>;
+  readDir: (dirPath: string) => Promise<ReadDirResult[]>;
+  pickFolder: () => Promise<string | null>;
   downloadFile: (
     url: string,
     destPath: string,

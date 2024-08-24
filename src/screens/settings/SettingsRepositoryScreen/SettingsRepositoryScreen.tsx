@@ -65,17 +65,14 @@ const SettingsBrowseScreen = () => {
           ListEmptyComponent={
             <EmptyView
               icon="Σ(ಠ_ಠ)"
-              description={getString('categories.emptyMsg')}
+              description={getString('repositories.emptyMsg')}
               theme={theme}
             />
           }
         />
       )}
       <FAB
-        style={[
-          styles.fab,
-          { backgroundColor: theme.primary, bottom: bottom + 16 },
-        ]}
+        style={[styles.fab, { backgroundColor: theme.primary, bottom: bottom }]}
         color={theme.onPrimary}
         label={getString('common.add')}
         uppercase={false}

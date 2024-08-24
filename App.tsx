@@ -10,16 +10,12 @@ import LottieSplashScreen from 'react-native-lottie-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider as PaperProvider } from 'react-native-paper';
 import * as Notifications from 'expo-notifications';
-import BackgroundService from 'react-native-background-actions';
 
 import { createTables } from '@database/db';
 import AppErrorBoundary from '@components/AppErrorBoundary/AppErrorBoundary';
-import { deserializePlugins } from '@plugins/pluginManager';
 
 import Main from './src/navigators/Main';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { MMKVStorage } from '@utils/mmkv/mmkv';
-import { BACKGROUND_ACTION } from '@services/constants';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => {
@@ -32,10 +28,7 @@ Notifications.setNotificationHandler({
 });
 
 createTables();
-deserializePlugins().then(() => LottieSplashScreen.hide());
-if (!BackgroundService.isRunning()) {
-  MMKVStorage.delete(BACKGROUND_ACTION);
-}
+LottieSplashScreen.hide();
 
 const App = () => {
   return (

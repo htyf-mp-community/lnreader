@@ -1,18 +1,14 @@
 import * as SQLite from 'expo-sqlite';
 import { showToast } from '@utils/showToast';
-import { getPlugin } from '@plugins/pluginManager';
 import { ChapterInfo, DownloadedChapter } from '../types';
 import { ChapterItem } from '@plugins/types';
 
-import * as cheerio from 'cheerio';
 import { txnErrorCallback } from '@database/utils/helpers';
-import { Plugin } from '@plugins/types';
 import { Update } from '../types';
 import { noop } from 'lodash';
 import { getString } from '@strings/translations';
 import FileManager from '@native/FileManager';
 import { NOVEL_STORAGE } from '@utils/Storages';
-import { downloadFile } from '@plugins/helpers/fetch';
 
 const db = SQLite.openDatabase('lnreader.db');
 const insertChapterQuery = `
@@ -94,6 +90,21 @@ export const getNovelChapters = (novelId: number): Promise<ChapterInfo[]> => {
   );
 };
 
+export const getChapter = async (
+  chapterId: number,
+): Promise<ChapterInfo | null> => {
+  return new Promise(resolve =>
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT * FROM Chapter WHERE id = ?',
+        [chapterId],
+        (txObj, { rows }) => resolve(rows.item(0)),
+        txnErrorCallback,
+      );
+    }),
+  );
+};
+
 export const getPageChapters = (
   novelId: number,
   sort?: string,
@@ -126,7 +137,7 @@ const getPrevChapterQuery = `
 export const getPrevChapter = (
   novelId: number,
   chapterId: number,
-): Promise<ChapterInfo> => {
+): Promise<ChapterInfo | null> => {
   return new Promise(resolve =>
     db.transaction(tx => {
       tx.executeSql(
@@ -157,7 +168,7 @@ const getNextChapterQuery = `
 export const getNextChapter = (
   novelId: number,
   chapterId: number,
-): Promise<ChapterInfo> => {
+): Promise<ChapterInfo | null> => {
   return new Promise(resolve =>
     db.transaction(tx => {
       tx.executeSql(
@@ -184,11 +195,33 @@ export const markChapterRead = async (chapterId: number) => {
   });
 };
 
+export const markChaptersRead = async (chapterIds: number[]) => {
+  db.transaction(tx => {
+    tx.executeSql(
+      `UPDATE Chapter SET \`unread\` = 0 WHERE id IN (${chapterIds.join(',')})`,
+      undefined,
+      noop,
+      txnErrorCallback,
+    );
+  });
+};
+
 const markChapterUnreadQuery = 'UPDATE Chapter SET `unread` = 1 WHERE id = ?';
 
 export const markChapterUnread = async (chapterId: number) => {
   db.transaction(tx => {
     tx.executeSql(markChapterUnreadQuery, [chapterId], noop, txnErrorCallback);
+  });
+};
+
+export const markChaptersUnread = async (chapterIds: number[]) => {
+  db.transaction(tx => {
+    tx.executeSql(
+      `UPDATE Chapter SET \`unread\` = 1 WHERE id IN (${chapterIds.join(',')})`,
+      undefined,
+      noop,
+      txnErrorCallback,
+    );
   });
 };
 
@@ -215,107 +248,14 @@ export const markAllChaptersUnread = async (novelId: number) => {
   });
 };
 
-const createChapterFolder = async (
-  path: string,
-  data: {
-    pluginId: string;
-    novelId: number;
-    chapterId: number;
-  },
-): Promise<string> => {
-  const mkdirIfNot = async (p: string, nomedia: boolean) => {
-    const nomediaPath =
-      p + (p.charAt(p.length - 1) === '/' ? '' : '/') + '.nomedia';
-    if (!(await FileManager.exists(p))) {
-      await FileManager.mkdir(p);
-      if (nomedia) {
-        await FileManager.writeFile(nomediaPath, ',');
-      }
-    }
-  };
-
-  await mkdirIfNot(path, false);
-
-  const { pluginId, novelId, chapterId } = data;
-  await mkdirIfNot(`${path}/${pluginId}/${novelId}/${chapterId}/`, true);
-  return `${path}/${pluginId}/${novelId}/${chapterId}/`;
-};
-
-const downloadFiles = async (
-  html: string,
-  plugin: Plugin,
-  novelId: number,
-  chapterId: number,
-): Promise<void> => {
-  try {
-    const folder = await createChapterFolder(NOVEL_STORAGE, {
-      pluginId: plugin.id,
-      novelId,
-      chapterId,
-    }).catch(error => {
-      throw error;
-    });
-    const loadedCheerio = cheerio.load(html);
-    const imgs = loadedCheerio('img').toArray();
-    for (let i = 0; i < imgs.length; i++) {
-      const elem = loadedCheerio(imgs[i]);
-      const url = elem.attr('src');
-      if (url) {
-        const fileurl = folder + i + '.b64.png';
-        elem.attr('src', `file://${fileurl}`);
-        await downloadFile(url, fileurl, plugin.imageRequestInit);
-      }
-    }
-    await FileManager.writeFile(folder + 'index.html', loadedCheerio.html());
-  } catch (error) {
-    throw error;
-  }
-};
-
-// novelId for determine folder %LNReaderDownloadDir%/novelId/ChapterId/
-export const downloadChapter = async (
-  pluginId: string,
-  novelId: number,
-  chapterId: number,
-  chapterPath: string,
-) => {
-  try {
-    const plugin = getPlugin(pluginId);
-    if (!plugin) {
-      throw new Error(getString('downloadScreen.pluginNotFound'));
-    }
-    const chapterText = await plugin.parseChapter(chapterPath);
-    if (chapterText && chapterText.length) {
-      await downloadFiles(chapterText, plugin, novelId, chapterId);
-      db.transaction(tx => {
-        tx.executeSql('UPDATE Chapter SET isDownloaded = 1 WHERE id = ?', [
-          chapterId,
-        ]);
-      });
-    } else {
-      throw new Error(getString('downloadScreen.chapterEmptyOrScrapeError'));
-    }
-  } catch (error) {
-    throw error;
-  }
-};
-
 const deleteDownloadedFiles = async (
   pluginId: string,
   novelId: number,
   chapterId: number,
 ) => {
   try {
-    const path = await createChapterFolder(NOVEL_STORAGE, {
-      pluginId,
-      novelId,
-      chapterId,
-    });
-    const files = await FileManager.readDir(path);
-    for (let i = 0; i < files.length; i++) {
-      await FileManager.unlink(files[i].path);
-    }
-    await FileManager.unlink(path);
+    const chapterFolder = `${NOVEL_STORAGE}/${pluginId}/${novelId}/${chapterId}`;
+    await FileManager.unlink(chapterFolder);
   } catch (error) {
     throw new Error(getString('novelScreen.deleteChapterError'));
   }
@@ -421,6 +361,18 @@ export const updateChapterProgress = async (
       progress,
       chapterId,
     ]);
+  });
+};
+
+export const updateChapterProgressByIds = async (
+  chapterIds: number[],
+  progress: number,
+) => {
+  db.transaction(tx => {
+    tx.executeSql(
+      `UPDATE Chapter SET progress = ? WHERE id in (${chapterIds.join(',')})`,
+      [progress],
+    );
   });
 };
 

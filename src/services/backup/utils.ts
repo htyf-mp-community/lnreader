@@ -1,7 +1,6 @@
 import { SELF_HOST_BACKUP } from '@hooks/persisted/useSelfHost';
 import { TRACKER } from '@hooks/persisted/useTracker';
 import { LAST_UPDATE_TIME } from '@hooks/persisted/useUpdates';
-import { BACKGROUND_ACTION } from '@services/constants';
 import { MMKVStorage } from '@utils/mmkv/mmkv';
 import { version } from '../../../package.json';
 import {
@@ -18,6 +17,7 @@ import { BackupCategory } from '@database/types';
 import { BackupEntryName } from './types';
 import FileManager from '@native/FileManager';
 import { ROOT_STORAGE } from '@utils/Storages';
+import ServiceManager from '@services/ServiceManager';
 
 const APP_STORAGE_URI = 'file://' + ROOT_STORAGE;
 
@@ -26,7 +26,7 @@ export const CACHE_DIR_PATH =
 
 const backupMMKVData = () => {
   const excludeKeys = [
-    BACKGROUND_ACTION,
+    ServiceManager.manager.STORE_KEY,
     TRACKER,
     SELF_HOST_BACKUP,
     LAST_UPDATE_TIME,
@@ -119,31 +119,27 @@ export const restoreData = async (cacheDirPath: string) => {
   await FileManager.readDir(novelDirPath).then(async items => {
     for (const item of items) {
       if (!item.isDirectory) {
-        await FileManager.readFile(item.path).then(content => {
-          const backupNovel = JSON.parse(content);
-          if (!backupNovel.cover?.startsWith('http')) {
-            backupNovel.cover = APP_STORAGE_URI + backupNovel.cover;
-          }
-          return _restoreNovelAndChapters(backupNovel);
-        });
+        const backupNovel = JSON.parse(FileManager.readFile(item.path));
+        if (!backupNovel.cover?.startsWith('http')) {
+          backupNovel.cover = APP_STORAGE_URI + backupNovel.cover;
+        }
+        await _restoreNovelAndChapters(backupNovel);
       }
     }
   });
 
   // categories
-  await FileManager.readFile(
-    cacheDirPath + '/' + BackupEntryName.CATEGORY,
-  ).then(async content => {
-    const categories: BackupCategory[] = JSON.parse(content);
-    for (const category of categories) {
-      await _restoreCategory(category);
-    }
-  });
+  const categories: BackupCategory[] = JSON.parse(
+    FileManager.readFile(cacheDirPath + '/' + BackupEntryName.CATEGORY),
+  );
+  for (const category of categories) {
+    await _restoreCategory(category);
+  }
 
   // settings
-  await FileManager.readFile(cacheDirPath + '/' + BackupEntryName.SETTING).then(
-    content => {
-      restoreMMKVData(JSON.parse(content));
-    },
+  restoreMMKVData(
+    JSON.parse(
+      FileManager.readFile(cacheDirPath + '/' + BackupEntryName.SETTING),
+    ),
   );
 };

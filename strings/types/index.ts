@@ -3,6 +3,7 @@
  */
 
 export interface StringMap {
+  'aboutScreen.website': 'string';
   'aboutScreen.discord': 'string';
   'aboutScreen.github': 'string';
   'aboutScreen.helpTranslate': 'string';
@@ -142,6 +143,7 @@ export interface StringMap {
   'categories.local': 'string';
   'categories.setCategories': 'string';
   'categories.setModalEmptyMsg': 'string';
+  'repositories.emptyMsg': 'string';
   'common.about': 'string';
   'common.add': 'string';
   'common.all': 'string';
@@ -218,6 +220,7 @@ export interface StringMap {
   'generalSettingsScreen.chapterSort': 'string';
   'generalSettingsScreen.desc': 'string';
   'generalSettingsScreen.disableHapticFeedback': 'string';
+  'generalSettingsScreen.disableHapticFeedbackDescription': 'string';
   'generalSettingsScreen.displayMode': 'string';
   'generalSettingsScreen.downloadNewChapters': 'string';
   'generalSettingsScreen.epub': 'string';
@@ -350,7 +353,8 @@ export interface StringMap {
   'readerScreen.bottomSheet.fontStyle': 'string';
   'readerScreen.bottomSheet.fullscreen': 'string';
   'readerScreen.bottomSheet.lineHeight': 'string';
-  'readerScreen.bottomSheet.readerPages': 'string';
+  'readerScreen.bottomSheet.padding': 'string';
+  'readerScreen.bottomSheet.pageReader': 'string';
   'readerScreen.bottomSheet.removeExtraSpacing': 'string';
   'readerScreen.bottomSheet.renderHml': 'string';
   'readerScreen.bottomSheet.scrollAmount': 'string';
@@ -362,6 +366,7 @@ export interface StringMap {
   'readerScreen.bottomSheet.textSize': 'string';
   'readerScreen.bottomSheet.useChapterDrawerSwipeNavigation': 'string';
   'readerScreen.bottomSheet.verticalSeekbar': 'string';
+  'readerScreen.bottomSheet.keepScreenOn': 'string';
   'readerScreen.bottomSheet.volumeButtonsScroll': 'string';
   'readerScreen.drawer.scrollToBottom': 'string';
   'readerScreen.drawer.scrollToCurrentChapter': 'string';

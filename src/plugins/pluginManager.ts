@@ -1,4 +1,4 @@
-import { reverse, uniqBy } from 'lodash-es';
+import { reverse, uniqBy } from 'lodash';
 import { newer } from '@utils/compareVersion';
 import { store } from './helpers/storage';
 
@@ -9,7 +9,7 @@ import qs from 'qs';
 import { NovelStatus, Plugin, PluginItem } from './types';
 import { FilterTypes } from './types/filterTypes';
 import { isUrlAbsolute } from './helpers/isAbsoluteUrl';
-import { fetchApi, fetchProto, fetchText } from './helpers/fetch';
+import { downloadFile, fetchApi, fetchProto, fetchText } from './helpers/fetch';
 import { defaultCover } from './helpers/constants';
 import { Storage, LocalStorage, SessionStorage } from './helpers/storage';
 import { encode, decode } from 'urlencode';
@@ -18,8 +18,6 @@ import FileManager from '@native/FileManager';
 import { getRepositoriesFromDb } from '@database/queries/RepositoryQueries';
 import { showToast } from '@utils/showToast';
 import { PLUGIN_STORAGE } from '@utils/Storages';
-
-const pluginFilePath = PLUGIN_STORAGE + '/plugins.json';
 
 const packages: Record<string, any> = {
   'htmlparser2': { Parser },
@@ -61,75 +59,42 @@ const initPlugin = (pluginId: string, rawCode: string) => {
 };
 
 const plugins: Record<string, Plugin | undefined> = {};
-let serializedPlugins: Record<string, string | undefined>;
-
-const serializePlugin = async (
-  pluginId: string,
-  rawCode: string,
-  installed: boolean,
-) => {
-  if (!serializedPlugins) {
-    if (await FileManager.exists(pluginFilePath)) {
-      const content = await FileManager.readFile(pluginFilePath);
-      serializedPlugins = JSON.parse(content);
-    } else {
-      serializedPlugins = {};
-    }
-  }
-  if (installed) {
-    serializedPlugins[pluginId] = rawCode;
-  } else {
-    serializedPlugins[pluginId] = undefined;
-  }
-  if (!(await FileManager.exists(PLUGIN_STORAGE))) {
-    await FileManager.mkdir(PLUGIN_STORAGE);
-  }
-  await FileManager.writeFile(
-    pluginFilePath,
-    JSON.stringify(serializedPlugins),
-  );
-};
-
-const deserializePlugins = () => {
-  return FileManager.readFile(pluginFilePath)
-    .then(content => {
-      serializedPlugins = JSON.parse(content);
-      Object.entries(serializedPlugins).forEach(([pluginId, script]) => {
-        if (script) {
-          const plugin = initPlugin(pluginId, script);
-          if (plugin) {
-            plugins[plugin.id] = plugin;
-          }
-        }
-      });
-    })
-    .catch(() => {
-      // nothing to read
-    });
-};
 
 const installPlugin = async (
-  pluginId: string,
-  url: string,
+  _plugin: PluginItem,
 ): Promise<Plugin | undefined> => {
   try {
-    return await fetch(url, {
+    const rawCode = await fetch(_plugin.url, {
       headers: { 'pragma': 'no-cache', 'cache-control': 'no-cache' },
-    })
-      .then(res => res.text())
-      .then(async rawCode => {
-        const plugin = initPlugin(pluginId, rawCode);
-        if (!plugin) {
-          return undefined;
-        }
-        let currentPlugin = plugins[plugin.id];
-        if (!currentPlugin || newer(plugin.version, currentPlugin.version)) {
-          plugins[plugin.id] = plugin;
-          currentPlugin = plugin;
-          await serializePlugin(plugin.id, rawCode, true);
-        }
-        return currentPlugin;
-      });
+    }).then(res => res.text());
+    const plugin = initPlugin(_plugin.id, rawCode);
+    if (!plugin) {
+      return undefined;
+    }
+    let currentPlugin = plugins[plugin.id];
+    if (!currentPlugin || newer(plugin.version, currentPlugin.version)) {
+      plugins[plugin.id] = plugin;
+      currentPlugin = plugin;
+
+      // save plugin code;
+      const pluginDir = `${PLUGIN_STORAGE}/${plugin.id}`;
+      await FileManager.mkdir(pluginDir);
+      const pluginPath = pluginDir + '/index.js';
+      const customJSPath = pluginDir + '/custom.js';
+      const customCSSPath = pluginDir + '/custom.css';
+      if (_plugin.customJS) {
+        await downloadFile(_plugin.customJS, customJSPath);
+      } else if (await FileManager.exists(customJSPath)) {
+        FileManager.unlink(customJSPath);
+      }
+      if (_plugin.customCSS) {
+        await downloadFile(_plugin.customCSS, customCSSPath);
+      } else if (await FileManager.exists(customCSSPath)) {
+        FileManager.unlink(customCSSPath);
+      }
+      await FileManager.writeFile(pluginPath, rawCode);
+    }
+    return currentPlugin;
   } catch (e: any) {
     throw e;
   }
@@ -142,11 +107,14 @@ const uninstallPlugin = async (_plugin: PluginItem) => {
       store.delete(key);
     }
   });
-  return serializePlugin(_plugin.id, '', false);
+  const pluginFilePath = `${PLUGIN_STORAGE}/${_plugin.id}/index.js`;
+  if (await FileManager.exists(pluginFilePath)) {
+    await FileManager.unlink(pluginFilePath);
+  }
 };
 
 const updatePlugin = async (plugin: PluginItem) => {
-  return installPlugin(plugin.id, plugin.url);
+  return installPlugin(plugin);
 };
 
 const fetchPlugins = async (): Promise<PluginItem[]> => {
@@ -176,7 +144,19 @@ const fetchPlugins = async (): Promise<PluginItem[]> => {
   return uniqBy(reverse(allPlugins), 'id');
 };
 
-const getPlugin = (pluginId: string) => plugins[pluginId];
+const getPlugin = (pluginId: string) => {
+  if (!plugins[pluginId]) {
+    const filePath = `${PLUGIN_STORAGE}/${pluginId}/index.js`;
+    try {
+      const code = FileManager.readFile(filePath);
+      const plugin = initPlugin(pluginId, code);
+      plugins[pluginId] = plugin;
+    } catch {
+      // file doesnt exist
+    }
+  }
+  return plugins[pluginId];
+};
 
 const LOCAL_PLUGIN_ID = 'local';
 
@@ -185,7 +165,6 @@ export {
   installPlugin,
   uninstallPlugin,
   updatePlugin,
-  deserializePlugins,
   fetchPlugins,
   LOCAL_PLUGIN_ID,
 };

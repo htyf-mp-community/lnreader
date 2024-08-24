@@ -50,6 +50,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { isNumber } from 'lodash';
 import NovelAppbar from './components/NovelAppbar';
 import { resolveUrl } from '@services/plugin/fetch';
+import { updateChapterProgressByIds } from '@database/queries/ChapterQueries';
 
 const Novel = ({ route, navigation }: NovelScreenProps) => {
   const { name, path, pluginId } = route.params;
@@ -91,11 +92,7 @@ const Novel = ({ route, navigation }: NovelScreenProps) => {
   const theme = useTheme();
   const { top: topInset, bottom: bottomInset } = useSafeAreaInsets();
 
-  const {
-    queue: downloadQueue,
-    downloadChapter,
-    downloadChapters,
-  } = useDownload();
+  const { downloadQueue, downloadChapter, downloadChapters } = useDownload();
 
   const [selected, setSelected] = useState<ChapterInfo[]>([]);
   const [editInfoModal, showEditInfoModal] = useState(false);
@@ -246,11 +243,15 @@ const Novel = ({ route, navigation }: NovelScreenProps) => {
     }
 
     if (selected.some(obj => !obj.unread)) {
+      const chapterIds = selected.map(chapter => chapter.id);
+
       list.push({
         icon: 'check-outline',
         onPress: () => {
           markChaptersUnread(selected);
+          updateChapterProgressByIds(chapterIds, 0);
           setSelected([]);
+          refreshChapters();
         },
       });
     }
@@ -383,6 +384,8 @@ const Novel = ({ route, navigation }: NovelScreenProps) => {
           <Portal>
             {selected.length === 0 ? (
               <NovelAppbar
+                novel={novel}
+                chapters={chapters}
                 deleteChapters={deleteChs}
                 downloadChapters={downloadChs}
                 showEditInfoModal={showEditInfoModal}
@@ -443,7 +446,7 @@ const Novel = ({ route, navigation }: NovelScreenProps) => {
               renderItem={({ item }) => (
                 <ChapterItem
                   isDownloading={downloadQueue.some(
-                    c => c.chapter.id === item.id,
+                    c => c.data.chapterId === item.id,
                   )}
                   isLocal={novel.isLocal}
                   theme={theme}

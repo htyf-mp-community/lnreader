@@ -12,10 +12,7 @@ import {
 } from './tables/ChapterTable';
 import { dbTxnErrorCallback } from './utils/helpers';
 import { noop } from 'lodash';
-import {
-  createRepositoryTableQuery,
-  insertDefaultRepository,
-} from './tables/RepositoryTable';
+import { createRepositoryTableQuery } from './tables/RepositoryTable';
 
 const dbName = 'lnreader.db';
 
@@ -23,9 +20,15 @@ let db: SQLite.SQLiteDatabase;
 
 export const createTables = async () => {
   if (!db) {
-    db = await SQLite.openDatabaseAsync(dbName);
+    db = await (() => {
+      return new Promise((resolve) => {
+        SQLite.openDatabase(dbName, undefined, undefined, undefined, (db) => {
+          resolve(db)
+        })
+      })
+    })();
   }
-  db.execAsync('PRAGMA foreign_keys = ON', false, () => {});
+  // db.execAsync('PRAGMA foreign_keys = ON', false, () => {});
   db.transaction(tx => {
     tx.executeSql(createNovelTableQuery);
     tx.executeSql(createCategoriesTableQuery);
@@ -38,7 +41,6 @@ export const createTables = async () => {
 
   db.transaction(tx => {
     tx.executeSql(createRepositoryTableQuery);
-    tx.executeSql(insertDefaultRepository);
   });
 };
 

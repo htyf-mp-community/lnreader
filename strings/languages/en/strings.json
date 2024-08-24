@@ -1,5 +1,6 @@
 {
   "aboutScreen": {
+    "website": "Website",
     "discord": "Discord",
     "github": "Github",
     "helpTranslate": "Help translate",
@@ -164,6 +165,9 @@
     "setCategories": "Set categories",
     "setModalEmptyMsg": "You have no categories. Tap the Edit button to create one for organizing your library"
   },
+  "repositories": {
+    "emptyMsg": "You have no repositories. Add your first plugin repository to get started."
+  },
   "common": {
     "about": "About",
     "add": "Add",
@@ -251,6 +255,7 @@
     "chapterSort": "Default chapter sort",
     "desc": "(Descending)",
     "disableHapticFeedback": "Disable haptic feedback",
+    "disableHapticFeedbackDescription": "Turn off vibrations for touch interactions.",
     "displayMode": "Display Mode",
     "downloadNewChapters": "Download new chapters",
     "epub": "EPUB",
@@ -426,7 +431,8 @@
       "fontStyle": "Font style",
       "fullscreen": "Fullscreen",
       "lineHeight": "Line Height",
-      "readerPages": "Tap left or right to navigate through pages in the reader (Experimental)",
+      "padding": "Padding",
+      "pageReader": "Tap left or right to navigate through pages in the reader (Experimental)",
       "removeExtraSpacing": "Remove extra paragraph spacing",
       "renderHml": "Render HTML",
       "scrollAmount": "Scroll amount (screen height by default)",
@@ -438,6 +444,7 @@
       "textSize": "Text size",
       "useChapterDrawerSwipeNavigation": "Swipe right to open drawer",
       "verticalSeekbar": "Vertical Seekbar",
+      "keepScreenOn": "Keep screen on",
       "volumeButtonsScroll": "Volume buttons scroll"
     },
     "drawer": {

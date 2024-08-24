@@ -72,7 +72,9 @@ export interface LibrarySettings {
 }
 
 export interface ChapterGeneralSettings {
+  keepScreenOn: boolean;
   fullScreenMode: boolean;
+  pageReader: boolean;
   swipeGestures: boolean;
   showScrollPercentage: boolean;
   useVolumeButtons: boolean;
@@ -106,6 +108,10 @@ export interface ChapterReaderSettings {
     rate?: number;
     pitch?: number;
   };
+  epubLocation: string;
+  epubUseAppTheme: boolean;
+  epubUseCustomCSS: boolean;
+  epubUseCustomJS: boolean;
 }
 
 const initialAppSettings: AppSettings = {
@@ -155,7 +161,9 @@ const initialBrowseSettings: BrowseSettings = {
 };
 
 export const initialChapterGeneralSettings: ChapterGeneralSettings = {
+  keepScreenOn: true,
   fullScreenMode: true,
+  pageReader: false,
   swipeGestures: false,
   showScrollPercentage: true,
   useVolumeButtons: false,
@@ -173,7 +181,7 @@ export const initialChapterReaderSettings: ChapterReaderSettings = {
   textColor: '#CCCCCC',
   textSize: 16,
   textAlign: 'left',
-  padding: 2,
+  padding: 4,
   fontFamily: '',
   lineHeight: 1.5,
   customCSS: '',
@@ -183,6 +191,10 @@ export const initialChapterReaderSettings: ChapterReaderSettings = {
     rate: 1,
     pitch: 1,
   },
+  epubLocation: '',
+  epubUseAppTheme: false,
+  epubUseCustomCSS: false,
+  epubUseCustomJS: false,
 };
 
 export const useAppSettings = () => {

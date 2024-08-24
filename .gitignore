@@ -91,3 +91,5 @@ dgz/build/outputs/*
 !dgz/build/outputs/app.json
 !dgz/build/outputs/dist.dgz
 # 只保留app.json/dist.dgz
+*.lockb
+.tool-versions

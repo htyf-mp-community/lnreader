@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, View, Text, StyleSheet } from 'react-native';
 import {
   FAB,
@@ -8,31 +8,36 @@ import {
   overlay,
 } from 'react-native-paper';
 
-import { useDownload, useTheme } from '@hooks/persisted';
+import { useTheme } from '@hooks/persisted';
 
 import { showToast } from '../../utils/showToast';
 import { getString } from '@strings/translations';
 import { Appbar, EmptyView } from '@components';
-import { DownloadQueueScreenProps } from '@navigators/types';
-import { useMMKVString } from 'react-native-mmkv';
-import { BACKGROUND_ACTION, BackgoundAction } from '@services/constants';
+import { TaskQueueScreenProps } from '@navigators/types';
+import ServiceManager, { BackgroundTask } from '@services/ServiceManager';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useMMKVObject } from 'react-native-mmkv';
 
-const DownloadQueue = ({ navigation }: DownloadQueueScreenProps) => {
+const DownloadQueue = ({ navigation }: TaskQueueScreenProps) => {
   const theme = useTheme();
-  const [currentAction] = useMMKVString(BACKGROUND_ACTION);
-  const isDownloading = useMemo(
-    () => currentAction === BackgoundAction.DOWNLOAD_CHAPTER,
-    [currentAction],
+  const { bottom } = useSafeAreaInsets();
+  const [taskQueue] = useMMKVObject<BackgroundTask[]>(
+    ServiceManager.manager.STORE_KEY,
   );
-  const { queue, resumeDowndload, pauseDownload, cancelDownload } =
-    useDownload();
+  const [isRunning, setIsRunning] = useState(ServiceManager.manager.isRunning);
   const [visible, setVisible] = useState(false);
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
+  useEffect(() => {
+    if (taskQueue?.length === 0) {
+      setIsRunning(false);
+    }
+  }, [taskQueue]);
+
   return (
     <>
       <Appbar
-        title={getString('moreScreen.downloadQueue')}
+        title={'Task Queue'}
         handleGoBack={navigation.goBack}
         theme={theme}
       >
@@ -40,7 +45,7 @@ const DownloadQueue = ({ navigation }: DownloadQueueScreenProps) => {
           visible={visible}
           onDismiss={closeMenu}
           anchor={
-            queue.length ? (
+            taskQueue?.length ? (
               <MaterialAppbar.Action
                 icon="dots-vertical"
                 iconColor={theme.onSurface}
@@ -52,7 +57,8 @@ const DownloadQueue = ({ navigation }: DownloadQueueScreenProps) => {
         >
           <Menu.Item
             onPress={() => {
-              cancelDownload();
+              ServiceManager.manager.stop();
+              setIsRunning(false);
               showToast(getString('downloadScreen.cancelled'));
               closeMenu();
             }}
@@ -63,19 +69,15 @@ const DownloadQueue = ({ navigation }: DownloadQueueScreenProps) => {
       </Appbar>
       <FlatList
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
-        keyExtractor={item =>
-          item.novel.pluginId + '_' + item.chapter.path.toString()
-        }
-        data={queue}
-        renderItem={({ item }) => (
+        keyExtractor={(item, index) => 'task_' + index}
+        data={taskQueue || []}
+        renderItem={({ item, index }) => (
           <View style={{ padding: 16 }}>
-            <Text style={{ color: theme.onSurface }}>{item.chapter.name}</Text>
+            <Text style={{ color: theme.onSurface }}>
+              {item.name} - {ServiceManager.manager.getTaskDescription(item)}
+            </Text>
             <ProgressBar
-              indeterminate={
-                isDownloading &&
-                queue.length > 0 &&
-                queue[0].chapter.id === item.chapter.id
-              }
+              indeterminate={taskQueue && taskQueue.length > 0 && index === 0}
               color={theme.primary}
               style={{ marginTop: 8 }}
             />
@@ -84,24 +86,28 @@ const DownloadQueue = ({ navigation }: DownloadQueueScreenProps) => {
         ListEmptyComponent={
           <EmptyView
             icon="(･o･;)"
-            description={getString('downloadScreen.noDownloads')}
+            description={'No running tasks'}
             theme={theme}
           />
         }
       />
-      {queue.length > 0 ? (
+      {taskQueue && taskQueue.length > 0 ? (
         <FAB
-          style={[styles.fab, { backgroundColor: theme.primary }]}
+          style={[styles.fab, { backgroundColor: theme.primary, bottom }]}
           color={theme.onPrimary}
           label={
-            isDownloading
-              ? getString('common.pause')
-              : getString('common.resume')
+            isRunning ? getString('common.pause') : getString('common.resume')
           }
           uppercase={false}
-          icon={isDownloading ? 'pause' : 'play'}
+          icon={isRunning ? 'pause' : 'play'}
           onPress={() => {
-            isDownloading ? pauseDownload() : resumeDowndload();
+            if (isRunning) {
+              ServiceManager.manager.pause();
+              setIsRunning(false);
+            } else {
+              ServiceManager.manager.resume();
+              setIsRunning(true);
+            }
           }}
         />
       ) : null}

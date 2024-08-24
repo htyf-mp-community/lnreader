@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import * as Linking from 'expo-linking';
 
 import {
   changeNavigationBarColor,
@@ -31,15 +32,21 @@ import MalTopNovels from '../screens/browse/discover/MalTopNovels';
 import AniListTopNovels from '../screens/browse/discover/AniListTopNovels';
 import NewUpdateDialog from '../components/NewUpdateDialog';
 import BrowseSettings from '../screens/browse/BrowseSettings';
-import { updateLibrary } from '@services/updates';
 import WebviewScreen from '@screens/WebviewScreen/WebviewScreen';
 import { RootStackParamList } from './types';
 import Color from 'color';
 import { useMMKVBoolean } from 'react-native-mmkv';
 import OnboardingScreen from '@screens/onboarding/OnboardingScreen';
+import {
+  createRepository,
+  isRepoUrlDuplicate,
+} from '@database/queries/RepositoryQueries';
+import { showToast } from '@utils/showToast';
+import ServiceManager from '@services/ServiceManager';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const MainNavigator = () => {
+  const url = Linking.useURL();
   const theme = useTheme();
   const { updateLibraryOnLaunch } = useAppSettings();
   const { refreshPlugins } = usePlugins();
@@ -58,13 +65,31 @@ const MainNavigator = () => {
 
   useEffect(() => {
     if (updateLibraryOnLaunch) {
-      updateLibrary();
+      ServiceManager.manager.addTask({ name: 'UPDATE_LIBRARY' });
     }
     if (isOnboarded) {
       // hack this helps app has enough time to initialize database;
       refreshPlugins();
     }
   }, [isOnboarded]);
+
+  useEffect(() => {
+    if (url) {
+      const { hostname, path, queryParams } = Linking.parse(url);
+      if (hostname === 'repo' && path === 'add') {
+        const repoUrl = queryParams?.url;
+        if (typeof repoUrl === 'string') {
+          isRepoUrlDuplicate(repoUrl).then(isDuplicated => {
+            if (isDuplicated) {
+              showToast('A respository with this url already exists!');
+            } else {
+              createRepository(repoUrl);
+            }
+          });
+        }
+      }
+    }
+  }, [url]);
 
   const { isNewVersion, latestRelease } = useGithubUpdateChecker();
 
