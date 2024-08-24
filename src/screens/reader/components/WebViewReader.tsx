@@ -39,12 +39,11 @@ type WebViewPostEvent = {
 
 type WebViewReaderProps = {
   html: string;
-  nextChapter: ChapterInfo;
+  nextChapter?: ChapterInfo;
   webViewRef: React.RefObject<WebView>;
   saveProgress(percentage: number): void;
   onPress(): void;
   navigateChapter(position: 'NEXT' | 'PREV'): void;
-  pageReader: boolean;
 };
 
 const onLogMessage = (payload: { nativeEvent: { data: string } }) => {
@@ -71,12 +70,6 @@ const WebViewReader: React.FC<WebViewReaderProps> = props => {
   } = props;
   const {top, bottom} = useSafeAreaInsets()
   const { novel, chapter } = useChapterContext();
-  const assetsUriPrefix = useMemo(
-    () => (__DEV__ ? 'http://localhost:8081/assets' : 'file:///android_asset'),
-    [],
-  );
-  const { RNDeviceInfo } = NativeModules;
-  const deviceInfoEmitter = new NativeEventEmitter(RNDeviceInfo);
   const theme = useTheme();
   const readerSettings = useMemo(
     () =>
@@ -84,13 +77,7 @@ const WebViewReader: React.FC<WebViewReaderProps> = props => {
       initialChapterReaderSettings,
     [],
   );
-  const {
-    showScrollPercentage,
-    swipeGestures,
-    showBatteryAndTime,
-    verticalSeekbar,
-    bionicReading,
-  } = useMemo(
+  const chapterGeneralSettings = useMemo(
     () =>
       getMMKVObject<ChapterGeneralSettings>(CHAPTER_GENERAL_SETTINGS) ||
       initialChapterGeneralSettings,
@@ -108,16 +95,16 @@ const WebViewReader: React.FC<WebViewReaderProps> = props => {
       switch (key) {
         case CHAPTER_READER_SETTINGS:
           webViewRef.current?.injectJavaScript(
-            `reader.updateReaderSettings(${MMKVStorage.getString(
+            `reader.readerSettings.val = ${MMKVStorage.getString(
               CHAPTER_READER_SETTINGS,
-            )})`,
+            )}`,
           );
           break;
         case CHAPTER_GENERAL_SETTINGS:
           webViewRef.current?.injectJavaScript(
-            `reader.updateGeneralSettings(${MMKVStorage.getString(
+            `reader.generalSettings.val = ${MMKVStorage.getString(
               CHAPTER_GENERAL_SETTINGS,
-            )})`,
+            )}`,
           );
           break;
       }
@@ -127,7 +114,7 @@ const WebViewReader: React.FC<WebViewReaderProps> = props => {
       'RNDeviceInfo_batteryLevelDidChange',
       (level: number) => {
         webViewRef.current?.injectJavaScript(
-          `reader.updateBatteryLevel(${level})`,
+          `reader.batteryLevel.val = ${level}`,
         );
       },
     );
@@ -137,22 +124,10 @@ const WebViewReader: React.FC<WebViewReaderProps> = props => {
       mmkvListener.remove();
     };
   }, []);
-  const debugging = `
-     // Debug
-     console = new Object();
-     console.log = function(log) {
-      reader.post({"type": "console", "msg": log});
-     };
-     console.debug = console.log;
-     console.info = console.log;
-     console.warn = console.log;
-     console.error = console.log;
-     `;
 
   return (
     <View style={{flex: 1}}>
     <WebView
-      injectedJavaScript={debugging}
       ref={webViewRef}
       style={{ backgroundColor: readerSettings.theme, width: layoutWidth }}
       allowFileAccess={true}
@@ -195,17 +170,10 @@ const WebViewReader: React.FC<WebViewReaderProps> = props => {
           case 'stop-speak':
             Speech.stop();
             break;
-          case 'copy':
-            if (event.data && typeof event.data === 'string') {
-              Clipboard.setStringAsync(event.data).then(() => {
-                showToast(getString('common.copiedToClipboard', { name: '' }));
-              });
-            }
-            break;
         }
       }}
       source={{
-        baseUrl: plugin?.site,
+        baseUrl: !chapter.isDownloaded ? plugin?.site : undefined,
         headers: plugin?.imageRequestInit?.headers,
         method: plugin?.imageRequestInit?.method,
         body: plugin?.imageRequestInit?.body,
