@@ -1,6 +1,6 @@
 import { StatusBar } from 'react-native';
 import { ThemeColors } from '@theme/types';
-import * as NavigationBar from 'expo-navigation-bar';
+// import * as NavigationBar from 'expo-navigation-bar';
 import Color from 'color';
 
 export const setStatusBarColor = (color: ThemeColors | Color) => {
@@ -16,6 +16,6 @@ export const setStatusBarColor = (color: ThemeColors | Color) => {
 };
 
 export const changeNavigationBarColor = (color: string, isDark = false) => {
-  NavigationBar.setBackgroundColorAsync(color);
-  NavigationBar.setButtonStyleAsync(isDark ? 'light' : 'dark');
+  // NavigationBar.setBackgroundColorAsync(color);
+  // NavigationBar.setButtonStyleAsync(isDark ? 'light' : 'dark');
 };

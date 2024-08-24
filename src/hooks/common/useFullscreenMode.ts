@@ -7,7 +7,7 @@ import {
   useTheme,
 } from '../persisted';
 import Color from 'color';
-import * as NavigationBar from 'expo-navigation-bar';
+// import * as NavigationBar from 'expo-navigation-bar';
 import {
   changeNavigationBarColor,
   setStatusBarColor,
@@ -22,7 +22,7 @@ const useFullscreenMode = () => {
   const setImmersiveMode = useCallback(() => {
     if (fullScreenMode) {
       StatusBar.setHidden(true);
-      NavigationBar.setVisibilityAsync('hidden');
+      // NavigationBar.setVisibilityAsync('hidden');
     } else {
       setStatusBarColor(Color(backgroundColor));
       changeNavigationBarColor(
@@ -34,7 +34,7 @@ const useFullscreenMode = () => {
 
   const showStatusAndNavBar = useCallback(() => {
     StatusBar.setHidden(false);
-    NavigationBar.setVisibilityAsync('visible');
+    // NavigationBar.setVisibilityAsync('visible');
 
     if (fullScreenMode) {
       /**
@@ -61,7 +61,7 @@ const useFullscreenMode = () => {
   useEffect(() => {
     const unsubscribe = addListener('beforeRemove', () => {
       StatusBar.setHidden(false);
-      NavigationBar.setVisibilityAsync('visible');
+      // NavigationBar.setVisibilityAsync('visible');
       setStatusBarColor(theme);
       changeNavigationBarColor(Color(theme.surface2).hex(), theme.isDark);
     });
