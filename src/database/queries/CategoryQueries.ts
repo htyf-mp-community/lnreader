@@ -4,173 +4,177 @@ import { BackupCategory, Category, NovelCategory, CCategory } from '../types';
 import { showToast } from '@utils/showToast';
 import { txnErrorCallback } from '../utils/helpers';
 import { getString } from '@strings/translations';
-const db = SQLite.openDatabase('lnreader.db');
+
+const db = SQLite.openDatabaseAsync('lnreader.db');
 
 const getCategoriesQuery = `
   SELECT * FROM Category ORDER BY sort
-	`;
+`;
 
 export const getCategoriesFromDb = async (): Promise<Category[]> => {
-  return new Promise(resolve =>
-    db.transaction(tx => {
-      tx.executeSql(
-        getCategoriesQuery,
-        [],
-        (txObj, { rows }) => resolve((rows as any)._array),
-        txnErrorCallback,
-      );
-    }),
-  );
+  try {
+    const result = await db.withTransactionAsync(async tx => {
+      const [queryResult] = await tx.executeSqlAsync(getCategoriesQuery, []);
+      return (queryResult.rows as any)._array;
+    });
+    return result;
+  } catch (error) {
+    txnErrorCallback('', error);
+  }
 };
 
 export const getCategoriesWithCount = async (
   novelIds: number[],
 ): Promise<CCategory[]> => {
   const getCategoriesWithCountQuery = `
-  SELECT *, novelsCount 
-  FROM Category LEFT JOIN 
-  (
-    SELECT categoryId, COUNT(novelId) as novelsCount 
-    FROM NovelCategory WHERE novelId in (${novelIds.join(
-      ',',
-    )}) GROUP BY categoryId 
-  ) as NC ON Category.id = NC.categoryId
-  WHERE Category.id != 2
-  ORDER BY sort
-	`;
+    SELECT *, novelsCount 
+    FROM Category LEFT JOIN 
+    (
+      SELECT categoryId, COUNT(novelId) as novelsCount 
+      FROM NovelCategory WHERE novelId in (${novelIds.join(
+        ',',
+      )}) GROUP BY categoryId 
+    ) as NC ON Category.id = NC.categoryId
+    WHERE Category.id != 2
+    ORDER BY sort
+  `;
 
-  return new Promise(resolve =>
-    db.transaction(tx => {
-      tx.executeSql(
-        getCategoriesWithCountQuery,
-        [],
-        (txObj, { rows }) => resolve((rows as any)._array),
-        txnErrorCallback,
-      );
-    }),
-  );
+  try {
+    const result = await db.withTransactionAsync(async tx => {
+      const [queryResult] = await tx.executeSqlAsync(getCategoriesWithCountQuery, []);
+      return (queryResult.rows as any)._array;
+    });
+    return result;
+  } catch (error) {
+    txnErrorCallback(error);
+  }
 };
 
 const createCategoryQuery = 'INSERT INTO Category (name) VALUES (?)';
 
-export const createCategory = (categoryName: string): void =>
-  db.transaction(tx =>
-    tx.executeSql(createCategoryQuery, [categoryName], noop, txnErrorCallback),
-  );
+export const createCategory = async (categoryName: string): Promise<void> => {
+  try {
+    await db.withTransactionAsync(async tx => {
+      await tx.executeSqlAsync(createCategoryQuery, [categoryName]);
+    });
+  } catch (error) {
+    txnErrorCallback(error);
+  }
+};
 
 const beforeDeleteCategoryQuery = `
-    UPDATE NovelCategory SET categoryId = (SELECT id FROM Category WHERE sort = 1)
-    WHERE novelId IN (
-      SELECT novelId FROM NovelCategory
-      GROUP BY novelId
-      HAVING COUNT(categoryId) = 1
-    )
-    AND categoryId = ?;
+  UPDATE NovelCategory SET categoryId = (SELECT id FROM Category WHERE sort = 1)
+  WHERE novelId IN (
+    SELECT novelId FROM NovelCategory
+    GROUP BY novelId
+    HAVING COUNT(categoryId) = 1
+  )
+  AND categoryId = ?;
 `;
+
 const deleteCategoryQuery = 'DELETE FROM Category WHERE id = ?';
 
-export const deleteCategoryById = (category: Category): void => {
+export const deleteCategoryById = async (category: Category): Promise<void> => {
   if (category.sort === 1 || category.id === 2) {
     return showToast(getString('categories.cantDeleteDefault'));
   }
-  db.transaction(tx => {
-    tx.executeSql(
-      beforeDeleteCategoryQuery,
-      [category.id],
-      noop,
-      txnErrorCallback,
-    );
-    tx.executeSql(deleteCategoryQuery, [category.id], noop, txnErrorCallback);
-  });
+
+  try {
+    await db.withTransactionAsync(async tx => {
+      await tx.executeSqlAsync(beforeDeleteCategoryQuery, [category.id]);
+      await tx.executeSqlAsync(deleteCategoryQuery, [category.id]);
+    });
+  } catch (error) {
+    txnErrorCallback(error);
+  }
 };
 
 const updateCategoryQuery = 'UPDATE Category SET name = ? WHERE id = ?';
 
-export const updateCategory = (
+export const updateCategory = async (
   categoryId: number,
   categoryName: string,
-): void =>
-  db.transaction(tx =>
-    tx.executeSql(
-      updateCategoryQuery,
-      [categoryName, categoryId],
-      noop,
-      txnErrorCallback,
-    ),
-  );
+): Promise<void> => {
+  try {
+    await (await db).withTransactionAsync(async tx => {
+      await tx.executeSqlAsync(updateCategoryQuery, [categoryName, categoryId]);
+    });
+  } catch (error) {
+    txnErrorCallback(error);
+  }
+};
 
 const isCategoryNameDuplicateQuery = `
   SELECT COUNT(*) as isDuplicate FROM Category WHERE name = ?
-	`;
+`;
 
-export const isCategoryNameDuplicate = (
+export const isCategoryNameDuplicate = async (
   categoryName: string,
 ): Promise<boolean> => {
-  return new Promise(resolve =>
-    db.transaction(tx => {
-      tx.executeSql(
-        isCategoryNameDuplicateQuery,
-        [categoryName],
-        (txObj, { rows }) => {
-          const { _array } = rows as any;
-          resolve(Boolean(_array[0]?.isDuplicate));
-        },
-        txnErrorCallback,
-      );
-    }),
-  );
+  try {
+    const result = await db.withTransactionAsync(async tx => {
+      const [queryResult] = await tx.executeSqlAsync(isCategoryNameDuplicateQuery, [categoryName]);
+      const { _array } = queryResult.rows as any;
+      return Boolean(_array[0]?.isDuplicate);
+    });
+    return result;
+  } catch (error) {
+    txnErrorCallback(error);
+  }
 };
 
 const updateCategoryOrderQuery = 'UPDATE Category SET sort = ? WHERE id = ?';
 
-export const updateCategoryOrderInDb = (categories: Category[]): void => {
-  // Do not set local as default one
+export const updateCategoryOrderInDb = async (categories: Category[]): Promise<void> => {
   if (categories.length && categories[0].id === 2) {
     return;
   }
-  db.transaction(tx => {
-    categories.map(category => {
-      tx.executeSql(
-        updateCategoryOrderQuery,
-        [category.sort, category.id],
-        noop,
-        txnErrorCallback,
-      );
+
+  try {
+    await db.withTransactionAsync(async tx => {
+      for (const category of categories) {
+        await tx.executeSqlAsync(updateCategoryOrderQuery, [category.sort, category.id]);
+      }
     });
-  });
+  } catch (error) {
+    txnErrorCallback(error);
+  }
 };
 
-export const getAllNovelCategories = (): Promise<NovelCategory[]> => {
-  return new Promise(resolve =>
-    db.transaction(tx => {
-      tx.executeSql(
-        'SELECT * FROM NovelCategory',
-        [],
-        (txObj, { rows }) => resolve((rows as any)._array),
-        txnErrorCallback,
-      );
-    }),
-  );
+export const getAllNovelCategories = async (): Promise<NovelCategory[]> => {
+  try {
+    const result = await db.withTransactionAsync(async tx => {
+      const [queryResult] = await tx.executeSqlAsync('SELECT * FROM NovelCategory', []);
+      return (queryResult.rows as any)._array;
+    });
+    return result;
+  } catch (error) {
+    txnErrorCallback(error);
+  }
 };
 
-export const _restoreCategory = (category: BackupCategory) => {
-  db.transaction(tx => {
-    tx.executeSql('DELETE FROM Category WHERE id = ? OR sort = ?', [
-      category.id,
-      category.sort,
-    ]);
-  });
-  db.transaction(tx => {
-    tx.executeSql('INSERT INTO Category (id, name, sort) VALUES (?, ?, ?)', [
-      category.id,
-      category.name,
-      category.sort,
-    ]);
-    for (const novelId of category.novelIds) {
-      tx.executeSql(
-        'INSERT INTO NovelCategory (categoryId, novelId) VALUES (?, ?)',
-        [category.id, novelId],
-      );
-    }
-  });
+export const _restoreCategory = async (category: BackupCategory): Promise<void> => {
+  try {
+    await db.withTransactionAsync(async tx => {
+      await tx.executeSqlAsync('DELETE FROM Category WHERE id = ? OR sort = ?', [
+        category.id,
+        category.sort,
+      ]);
+
+      await tx.executeSqlAsync('INSERT INTO Category (id, name, sort) VALUES (?, ?, ?)', [
+        category.id,
+        category.name,
+        category.sort,
+      ]);
+
+      for (const novelId of category.novelIds) {
+        await tx.executeSqlAsync(
+          'INSERT INTO NovelCategory (categoryId, novelId) VALUES (?, ?)',
+          [category.id, novelId],
+        );
+      }
+    });
+  } catch (error) {
+    txnErrorCallback(error);
+  }
 };

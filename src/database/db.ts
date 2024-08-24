@@ -16,31 +16,22 @@ import { createRepositoryTableQuery } from './tables/RepositoryTable';
 
 const dbName = 'lnreader.db';
 
-let db: SQLite.SQLiteDatabase;
+const db = SQLite.openDatabaseSync(dbName);
 
 export const createTables = async () => {
-  if (!db) {
-    db = await (() => {
-      return new Promise((resolve) => {
-        SQLite.openDatabase(dbName, undefined, undefined, undefined, (db) => {
-          resolve(db)
-        })
-      })
-    })();
-  }
-  // db.execAsync('PRAGMA foreign_keys = ON', false, () => {});
-  db.transaction(tx => {
-    tx.executeSql(createNovelTableQuery);
-    tx.executeSql(createCategoriesTableQuery);
-    tx.executeSql(createCategoryDefaultQuery);
-    tx.executeSql(createCategoryTriggerQuery);
-    tx.executeSql(createNovelCategoryTableQuery);
-    tx.executeSql(createChapterTableQuery);
-    tx.executeSql(createChapterNovelIdIndexQuery);
+  await db.execAsync('PRAGMA foreign_keys = ON');
+  await db.withTransactionAsync(async () => {
+    await db.execAsync(createNovelTableQuery);
+    await db.execAsync(createCategoriesTableQuery);
+    await db.execAsync(createCategoryDefaultQuery);
+    await db.execAsync(createCategoryTriggerQuery);
+    await db.execAsync(createNovelCategoryTableQuery);
+    await db.execAsync(createChapterTableQuery);
+    await db.execAsync(createChapterNovelIdIndexQuery);
   });
 
-  db.transaction(tx => {
-    tx.executeSql(createRepositoryTableQuery);
+  db.withTransactionAsync(async () => {
+    await db.execAsync(createRepositoryTableQuery);
   });
 };
 
@@ -48,16 +39,14 @@ export const createTables = async () => {
  * For Testing
  */
 export const deleteDatabase = async () => {
-  db.transaction(
-    tx => {
-      tx.executeSql('DROP TABLE Category');
-      tx.executeSql('DROP TABLE Novel');
-      tx.executeSql('DROP TABLE NovelCategory');
-      tx.executeSql('DROP TABLE Chapter');
-      tx.executeSql('DROP TABLE Download');
-      tx.executeSql('DROP TABLE Repository');
+  db.withTransactionAsync(
+    async () => {
+      await db.execAsync('DROP TABLE Category');
+      await db.execAsync('DROP TABLE Novel');
+      await db.execAsync('DROP TABLE NovelCategory');
+      await db.execAsync('DROP TABLE Chapter');
+      await db.execAsync('DROP TABLE Download');
+      await db.execAsync('DROP TABLE Repository');
     },
-    dbTxnErrorCallback,
-    noop,
   );
 };
