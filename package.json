@@ -1,6 +1,6 @@
 {
   "name": "lnreader",
-  "version": "2.0.31",
+  "version": "2.0.32",
   "private": true,
   "scripts": {
     "run:scripts": "node ./scripts/index.js",
@@ -8,6 +8,7 @@
     "dgz:init": "npm run run:scripts && htyf-mp --init",
     "build:dgz": "npm run run:scripts && htyf-mp --build",
     "start": "htyf-mp --start",
+    "start:rn": "react-native start",
     "android": "npm run prestart && react-native run-android --active-arch-only",
     "ios": "react-native run-ios",
     "prestart": "node scripts/setEnvFile.cjs Debug",
