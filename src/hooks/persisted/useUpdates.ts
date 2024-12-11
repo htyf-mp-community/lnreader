@@ -5,6 +5,7 @@ import { Update } from '@database/types';
 import { useMMKVBoolean, useMMKVString } from 'react-native-mmkv';
 import dayjs from 'dayjs';
 import { parseChapterNumber } from '@utils/parseChapterNumber';
+import { MMKVStorage } from '@utils/mmkv/mmkv';
 
 export const SHOW_LAST_UPDATE_TIME = 'SHOW_LAST_UPDATE_TIME';
 export const LAST_UPDATE_TIME = 'LAST_UPDATE_TIME';
@@ -12,8 +13,9 @@ export const LAST_UPDATE_TIME = 'LAST_UPDATE_TIME';
 export const useLastUpdate = () => {
   const [showLastUpdateTime = true, setShowLastUpdateTime] = useMMKVBoolean(
     SHOW_LAST_UPDATE_TIME,
+    MMKVStorage,
   );
-  const [lastUpdateTime, setLastUpdateTime] = useMMKVString(LAST_UPDATE_TIME);
+  const [lastUpdateTime, setLastUpdateTime] = useMMKVString(LAST_UPDATE_TIME, MMKVStorage);
   return {
     lastUpdateTime,
     showLastUpdateTime,

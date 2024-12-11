@@ -1,7 +1,6 @@
 import {Linking} from 'react-native'
 // import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
-import qs from 'qs';
 import { MYANIMELIST_CLIENT_ID } from '@env';
 import { Tracker, UserListStatus } from './index';
 
@@ -52,12 +51,12 @@ export const myAnimeListTracker: Tracker = {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: qs.stringify({
+      body: new URLSearchParams({
         client_id: clientId,
         grant_type: 'authorization_code',
         code,
         code_verifier: challenge,
-      }),
+      }).toString(),
     });
 
     const tokenResponse = await response.json();
@@ -73,10 +72,10 @@ export const myAnimeListTracker: Tracker = {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: qs.stringify({
+      body: new URLSearchParams({
         grant_type: 'refresh_token',
         refresh_token: auth.refreshToken,
-      }),
+      }).toString(),
     });
 
     const tokenResponse = await response.json();
@@ -144,12 +143,12 @@ export const myAnimeListTracker: Tracker = {
         Authorization: `Bearer ${auth.accessToken}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: qs.stringify({
+      body: new URLSearchParams({
         status,
         is_rereading: repeating,
         num_chapters_read: payload.progress,
         score: payload.score,
-      }),
+      }).toString(),
     });
 
     const data = await res.json();

@@ -10,6 +10,7 @@ import Color from 'color';
 
 import { defaultTheme } from '@theme/md3/defaultTheme';
 import { ThemeColors } from '@theme/types';
+import { MMKVStorage } from '@utils/mmkv/mmkv';
 
 const getElevationColor = (colors: ThemeColors, elevation: number) => {
   return Color(colors.surface)
@@ -19,9 +20,9 @@ const getElevationColor = (colors: ThemeColors, elevation: number) => {
 };
 
 export const useTheme = (): ThemeColors => {
-  const [appTheme] = useMMKVObject<ThemeColors>('APP_THEME');
-  const [isAmoledBlack] = useMMKVBoolean('AMOLED_BLACK');
-  const [customAccent] = useMMKVString('CUSTOM_ACCENT_COLOR');
+  const [appTheme] = useMMKVObject<ThemeColors>('APP_THEME', MMKVStorage);
+  const [isAmoledBlack] = useMMKVBoolean('AMOLED_BLACK', MMKVStorage);
+  const [customAccent] = useMMKVString('CUSTOM_ACCENT_COLOR', MMKVStorage);
 
   const theme: ThemeColors = useMemo(() => {
     const isDeviveColorSchemeDark = Appearance.getColorScheme() === 'dark';

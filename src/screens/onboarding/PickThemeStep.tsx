@@ -6,6 +6,8 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { useMMKVObject } from 'react-native-mmkv';
 import { useTheme } from '@hooks/persisted';
 import { darkThemes, lightThemes } from '@theme/md3';
+import { getString } from '@strings/translations';
+import { MMKVStorage } from '@utils/mmkv/mmkv';
 
 const ThemeList = ({
   theme,
@@ -14,7 +16,7 @@ const ThemeList = ({
   theme: ThemeColors;
   list: ThemeColors[];
 }) => {
-  const [, setTheme] = useMMKVObject('APP_THEME');
+  const [, setTheme] = useMMKVObject('APP_THEME', MMKVStorage);
   return (
     <ScrollView
       contentContainerStyle={{
@@ -66,7 +68,9 @@ const SchemeButton = ({
         onPress={onPress}
       >
         <Text style={{ color: isSelected ? theme.onPrimary : theme.onSurface }}>
-          {isDarkButton ? 'Dark' : 'Light'}
+          {isDarkButton
+            ? getString('onboardingScreen.dark')
+            : getString('onboardingScreen.light')}
         </Text>
       </Pressable>
     </View>
@@ -88,7 +92,7 @@ const getInverseTheme = (theme: ThemeColors) => {
 
 export default function PickThemeStep() {
   const theme = useTheme();
-  const [, setTheme] = useMMKVObject('APP_THEME');
+  const [, setTheme] = useMMKVObject('APP_THEME', MMKVStorage);
   return (
     <View>
       <View style={styles.buttonContainer}>

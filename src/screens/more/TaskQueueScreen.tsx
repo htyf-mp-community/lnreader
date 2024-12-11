@@ -17,12 +17,14 @@ import { TaskQueueScreenProps } from '@navigators/types';
 import ServiceManager, { BackgroundTask } from '@services/ServiceManager';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMMKVObject } from 'react-native-mmkv';
+import { MMKVStorage } from '@utils/mmkv/mmkv';
 
 const DownloadQueue = ({ navigation }: TaskQueueScreenProps) => {
   const theme = useTheme();
   const { bottom } = useSafeAreaInsets();
   const [taskQueue] = useMMKVObject<BackgroundTask[]>(
     ServiceManager.manager.STORE_KEY,
+    MMKVStorage,
   );
   const [isRunning, setIsRunning] = useState(ServiceManager.manager.isRunning);
   const [visible, setVisible] = useState(false);

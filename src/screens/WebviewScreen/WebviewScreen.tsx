@@ -1,6 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import WebView, { WebViewNavigation } from 'react-native-webview';
 import { ProgressBar } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getPlugin } from '@plugins/pluginManager';
 import { useBackHandler } from '@hooks';
@@ -23,8 +24,9 @@ type StorageData = {
 
 const WebviewScreen = ({ route, navigation }: WebviewScreenProps) => {
   const { name, url, pluginId, isNovel } = route.params;
-  const isSave = getPlugin(pluginId)?.webStorageUtilized;
+  const [isSave, setIsSave] = useState(false);
   const uri = resolveUrl(pluginId, url, isNovel);
+  const { bottom } = useSafeAreaInsets();
 
   const theme = useTheme();
   const webViewRef = useRef<WebView | null>(null);
@@ -72,6 +74,13 @@ const WebviewScreen = ({ route, navigation }: WebviewScreenProps) => {
     return false;
   });
 
+  useEffect(() => {
+    (async () => {
+      const _isSave = (await getPlugin(pluginId))?.webStorageUtilized;
+      setIsSave(!!_isSave);
+    })()
+  }, [])
+
   const injectJavaScriptCode =
     'window.ReactNativeWebView.postMessage(JSON.stringify({localStorage, sessionStorage}))';
 
@@ -107,6 +116,7 @@ const WebviewScreen = ({ route, navigation }: WebviewScreenProps) => {
         onMessage={({ nativeEvent }) =>
           setTempData(JSON.parse(nativeEvent.data))
         }
+        containerStyle={{ paddingBottom: bottom }}
       />
       {menuVisible ? (
         <Menu

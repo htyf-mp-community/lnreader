@@ -13,9 +13,7 @@ export const useBrowseSource = (
   const [error, setError] = useState<string>();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [filterValues, setFilterValues] = useState<Filters | undefined>(
-    getPlugin(pluginId)?.filters,
-  );
+  const [filterValues, setFilterValues] = useState<Filters | undefined>();
   const [selectedFilters, setSelectedFilters] = useState<
     FilterToValues<Filters> | undefined
   >(filterValues);
@@ -27,7 +25,7 @@ export const useBrowseSource = (
     async (page: number, filters?: FilterToValues<Filters>) => {
       if (isScreenMounted.current === true) {
         try {
-          const plugin = getPlugin(pluginId);
+          const plugin = await getPlugin(pluginId);
           if (!plugin) {
             throw new Error(`Unknown plugin: ${pluginId}`);
           }
@@ -67,6 +65,10 @@ export const useBrowseSource = (
    * On screen unmount
    */
   useEffect(() => {
+    (async () => {
+      const _filters = (await getPlugin(pluginId))?.filters
+      setFilterValues(_filters)
+    })()
     return () => {
       isScreenMounted.current = false;
     };
@@ -131,7 +133,7 @@ export const useSearchSource = (pluginId: string) => {
     async (searchText: string, page: number) => {
       if (isScreenMounted.current === true) {
         try {
-          const plugin = getPlugin(pluginId);
+          const plugin = await getPlugin(pluginId);
           if (!plugin) {
             throw new Error(`Unknown plugin: ${pluginId}`);
           }

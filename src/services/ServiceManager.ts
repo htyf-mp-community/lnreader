@@ -1,5 +1,5 @@
 import BackgroundService from 'react-native-background-actions';
-import * as Notifications from 'expo-notifications';
+// import * as Notifications from 'expo-notifications';
 
 import { getMMKVObject, setMMKVObject } from '@utils/mmkv/mmkv';
 import { importEpub } from './epub/import';
@@ -67,13 +67,13 @@ export default class ServiceManager {
         color: '#00adb5',
         linkingURI: 'lnreader://',
       }).catch(error => {
-        Notifications.scheduleNotificationAsync({
-          content: {
-            title: getString('backupScreen.drive.backupInterruped'),
-            body: error.message,
-          },
-          trigger: null,
-        });
+        // Notifications.scheduleNotificationAsync({
+        //   content: {
+        //     title: getString('backupScreen.drive.backupInterruped'),
+        //     body: error.message,
+        //   },
+        //   trigger: null,
+        // });
         BackgroundService.stop();
       });
     }
@@ -123,29 +123,29 @@ export default class ServiceManager {
         await manager.executeTask(currentTask);
         doneTasks[currentTask.name] += 1;
       } catch (error: any) {
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: currentTask.name,
-            body: error?.message || String(error),
-          },
-          trigger: null,
-        });
+        // await Notifications.scheduleNotificationAsync({
+        //   content: {
+        //     title: currentTask.name,
+        //     body: error?.message || String(error),
+        //   },
+        //   trigger: null,
+        // });
       } finally {
         setMMKVObject(manager.STORE_KEY, manager.getTaskList().slice(1));
       }
     }
 
     if (manager.getTaskList().length === 0) {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: 'Background tasks done',
-          body: Object.keys(doneTasks)
-            .filter(key => doneTasks[key as BackgroundTask['name']] > 0)
-            .map(key => `${key}: ${doneTasks[key as BackgroundTask['name']]}`)
-            .join('\n'),
-        },
-        trigger: null,
-      });
+      // await Notifications.scheduleNotificationAsync({
+      //   content: {
+      //     title: 'Background tasks done',
+      //     body: Object.keys(doneTasks)
+      //       .filter(key => doneTasks[key as BackgroundTask['name']] > 0)
+      //       .map(key => `${key}: ${doneTasks[key as BackgroundTask['name']]}`)
+      //       .join('\n'),
+      //   },
+      //   trigger: null,
+      // });
     }
   }
   getTaskDescription(task: BackgroundTask) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Dimensions,
   NativeEventEmitter,
@@ -86,7 +86,8 @@ const WebViewReader: React.FC<WebViewReaderProps> = props => {
   const batteryLevel = useMemo(getBatteryLevelSync, []);
   const layoutHeight = Dimensions.get('window').height - top - bottom;
   const layoutWidth = Dimensions.get('window').width;
-  const plugin = getPlugin(novel?.pluginId);
+  const [plugin, setPlugin] = useState<any>();
+  
   const pluginCustomJS = `file://${PLUGIN_STORAGE}/${plugin?.id}/custom.js`;
   const pluginCustomCSS = `file://${PLUGIN_STORAGE}/${plugin?.id}/custom.css`;
 
@@ -124,6 +125,13 @@ const WebViewReader: React.FC<WebViewReaderProps> = props => {
       mmkvListener.remove();
     };
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      const _plugin = await getPlugin(novel?.pluginId);
+      setPlugin(_plugin);
+    })()
+  }, [novel?.pluginId])
 
   return (
     <View style={{flex: 1}}>

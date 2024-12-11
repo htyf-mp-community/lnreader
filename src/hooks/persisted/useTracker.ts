@@ -1,6 +1,7 @@
 import { AuthenticationResult, Tracker, TrackerName } from '@services/Trackers';
 import { aniListTracker } from '@services/Trackers/aniList';
 import { myAnimeListTracker } from '@services/Trackers/myAnimeList';
+import { MMKVStorage } from '@utils/mmkv/mmkv';
 import { useMMKVObject } from 'react-native-mmkv';
 
 export const TRACKER = 'TRACKER';
@@ -21,7 +22,7 @@ export const getTracker = (name: TrackerName) => {
 };
 
 export function useTracker() {
-  const [tracker, setValue] = useMMKVObject<TrackerMetadata>(TRACKER);
+  const [tracker, setValue] = useMMKVObject<TrackerMetadata>(TRACKER, MMKVStorage);
   const setTracker = (name: TrackerName, auth: AuthenticationResult<any>) =>
     setValue({ name, auth });
   const removeTracker = () => setValue(undefined);

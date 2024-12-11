@@ -16,6 +16,9 @@ import { getString } from '@strings/translations';
 import KeepScreenAwake from './components/KeepScreenAwake';
 import useChapter from './hooks/useChapter';
 import { ChapterContextProvider, useChapterContext } from './ChapterContext';
+import { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/types';
+import { useBackHandler } from '@hooks/index';
+import { get } from 'lodash';
 
 const Chapter = ({ route, navigation }: ChapterScreenProps) => {
   const drawerRef = useRef<Drawer>(null);
@@ -54,7 +57,7 @@ export const ChapterContent = ({
 }: ChapterContentProps) => {
   const { novel, chapter } = useChapterContext();
   const webViewRef = useRef<WebView>(null);
-  const readerSheetRef = useRef(null);
+  const readerSheetRef = useRef<BottomSheetModalMethods>(null);
   const theme = useTheme();
   const { pageReader = false, keepScreenOn } = useChapterGeneralSettings();
 
@@ -89,6 +92,14 @@ export const ChapterContent = ({
     drawerRef.current?.openDrawer();
     hideHeader();
   }, [drawerRef, hideHeader]);
+
+  useBackHandler(() => {
+    if (get(drawerRef.current?.state, 'isOpen')) {
+      drawerRef.current?.closeDrawer();
+      return true;
+    }
+    return false;
+  });
 
   if (error) {
     return (

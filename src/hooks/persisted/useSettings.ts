@@ -5,6 +5,7 @@ import {
 } from '@screens/library/constants/constants';
 import { useMMKVObject } from 'react-native-mmkv';
 import { Voice } from 'expo-speech';
+import { MMKVStorage } from '@utils/mmkv/mmkv';
 
 export const APP_SETTINGS = 'APP_SETTINGS';
 export const BROWSE_SETTINGS = 'BROWSE_SETTINGS';
@@ -28,6 +29,7 @@ export interface AppSettings {
   showUpdatesTab: boolean;
   showLabelsInNav: boolean;
   useFabForContinueReading: boolean;
+  disableLoadingAnimations: boolean;
 
   /**
    * Library settings
@@ -56,6 +58,7 @@ export interface AppSettings {
 export interface BrowseSettings {
   showMyAnimeList: boolean;
   showAniList: boolean;
+  globalSearchConcurrency?: number;
 }
 
 export interface LibrarySettings {
@@ -132,6 +135,7 @@ const initialAppSettings: AppSettings = {
   showUpdatesTab: true,
   showLabelsInNav: true,
   useFabForContinueReading: false,
+  disableLoadingAnimations: false,
 
   /**
    * Library settings
@@ -160,6 +164,7 @@ const initialAppSettings: AppSettings = {
 const initialBrowseSettings: BrowseSettings = {
   showMyAnimeList: true,
   showAniList: true,
+  globalSearchConcurrency: 3,
 };
 
 export const initialChapterGeneralSettings: ChapterGeneralSettings = {
@@ -203,7 +208,7 @@ export const initialChapterReaderSettings: ChapterReaderSettings = {
 
 export const useAppSettings = () => {
   const [appSettings = initialAppSettings, setSettings] =
-    useMMKVObject<AppSettings>(APP_SETTINGS);
+    useMMKVObject<AppSettings>(APP_SETTINGS, MMKVStorage);
 
   const setAppSettings = (values: Partial<AppSettings>) =>
     setSettings({ ...appSettings, ...values });
@@ -216,7 +221,7 @@ export const useAppSettings = () => {
 
 export const useBrowseSettings = () => {
   const [browseSettings = initialBrowseSettings, setSettings] =
-    useMMKVObject<BrowseSettings>(BROWSE_SETTINGS);
+    useMMKVObject<BrowseSettings>(BROWSE_SETTINGS, MMKVStorage);
 
   const setBrowseSettings = (values: Partial<BrowseSettings>) =>
     setSettings({ ...browseSettings, ...values });
@@ -229,7 +234,7 @@ export const useBrowseSettings = () => {
 
 export const useLibrarySettings = () => {
   const [librarySettings, setSettings] =
-    useMMKVObject<LibrarySettings>(LIBRARY_SETTINGS);
+    useMMKVObject<LibrarySettings>(LIBRARY_SETTINGS, MMKVStorage);
 
   const setLibrarySettings = (value: Partial<LibrarySettings>) =>
     setSettings({ ...librarySettings, ...value });
@@ -242,7 +247,7 @@ export const useLibrarySettings = () => {
 
 export const useChapterGeneralSettings = () => {
   const [chapterGeneralSettings = initialChapterGeneralSettings, setSettings] =
-    useMMKVObject<ChapterGeneralSettings>(CHAPTER_GENERAL_SETTINGS);
+    useMMKVObject<ChapterGeneralSettings>(CHAPTER_GENERAL_SETTINGS, MMKVStorage);
 
   const setChapterGeneralSettings = (values: Partial<ChapterGeneralSettings>) =>
     setSettings({ ...chapterGeneralSettings, ...values });
@@ -255,7 +260,7 @@ export const useChapterGeneralSettings = () => {
 
 export const useChapterReaderSettings = () => {
   const [chapterReaderSettings = initialChapterReaderSettings, setSettings] =
-    useMMKVObject<ChapterReaderSettings>(CHAPTER_READER_SETTINGS);
+    useMMKVObject<ChapterReaderSettings>(CHAPTER_READER_SETTINGS, MMKVStorage);
 
   const setChapterReaderSettings = (values: Partial<ChapterReaderSettings>) =>
     setSettings({ ...chapterReaderSettings, ...values });

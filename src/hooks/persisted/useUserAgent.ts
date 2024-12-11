@@ -10,7 +10,7 @@ export const getUserAgent = () => {
 
 export default function useUserAgent() {
   const [userAgent = getUserAgentSync(), setUserAgent] =
-    useMMKVString(USER_AGENT);
+    useMMKVString(USER_AGENT, MMKVStorage);
 
   return {
     userAgent,

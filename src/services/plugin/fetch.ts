@@ -2,7 +2,7 @@ import { getPlugin } from '@plugins/pluginManager';
 import { isUrlAbsolute } from '@plugins/helpers/isAbsoluteUrl';
 
 export const fetchNovel = async (pluginId: string, novelPath: string) => {
-  const plugin = getPlugin(pluginId);
+  const plugin = await getPlugin(pluginId);
   if (!plugin) {
     throw new Error(`Unknown plugin: ${pluginId}`);
   }
@@ -11,7 +11,7 @@ export const fetchNovel = async (pluginId: string, novelPath: string) => {
 };
 
 export const fetchChapter = async (pluginId: string, chapterPath: string) => {
-  const plugin = getPlugin(pluginId);
+  const plugin = await getPlugin(pluginId);
   let chapterText = `Unkown plugin: ${pluginId}`;
   if (plugin) {
     chapterText = await plugin.parseChapter(chapterPath);
@@ -20,7 +20,7 @@ export const fetchChapter = async (pluginId: string, chapterPath: string) => {
 };
 
 export const fetchChapters = async (pluginId: string, novelPath: string) => {
-  const plugin = getPlugin(pluginId);
+  const plugin = await getPlugin(pluginId);
   if (!plugin) {
     throw new Error(`Unknown plugin: ${pluginId}`);
   }
@@ -33,7 +33,7 @@ export const fetchPage = async (
   novelPath: string,
   page: string,
 ) => {
-  const plugin = getPlugin(pluginId);
+  const plugin = await getPlugin(pluginId);
   if (!plugin || !plugin.parsePage) {
     throw new Error('Cant parse page!');
   }
@@ -41,7 +41,7 @@ export const fetchPage = async (
   return res;
 };
 
-export const resolveUrl = (
+export const resolveUrl = async (
   pluginId: string,
   path: string,
   isNovel?: boolean,
@@ -49,7 +49,7 @@ export const resolveUrl = (
   if (isUrlAbsolute(path)) {
     return path;
   }
-  const plugin = getPlugin(pluginId);
+  const plugin = await getPlugin(pluginId);
   try {
     if (!plugin) {
       throw new Error(`Unknown plugin: ${pluginId}`);

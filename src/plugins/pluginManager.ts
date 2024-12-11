@@ -5,7 +5,6 @@ import { store } from './helpers/storage';
 // packages for plugins
 import { load } from 'cheerio';
 import dayjs from 'dayjs';
-import qs from 'qs';
 import { NovelStatus, Plugin, PluginItem } from './types';
 import { FilterTypes } from './types/filterTypes';
 import { isUrlAbsolute } from './helpers/isAbsoluteUrl';
@@ -23,7 +22,6 @@ const packages: Record<string, any> = {
   'htmlparser2': { Parser },
   'cheerio': { load },
   'dayjs': dayjs,
-  'qs': qs,
   'urlencode': { encode, decode },
   '@libs/novelStatus': { NovelStatus },
   '@libs/fetch': { fetchApi, fetchText, fetchProto },
@@ -120,15 +118,7 @@ const updatePlugin = async (plugin: PluginItem) => {
 const fetchPlugins = async (): Promise<PluginItem[]> => {
   const allPlugins: PluginItem[] = [];
   const allRepositories = await getRepositoriesFromDb();
-  if (!allRepositories.length) {
-    const githubUsername = 'htyf-mp-community';
-    const githubRepository = 'lnreader-sources';
-    const pluginsTag = 'v2.1.0';
-    allRepositories.unshift({
-      id: -1,
-      url: `https://raw.gitmirror.com/${githubUsername}/${githubRepository}/plugins/${pluginsTag}/.dist/plugins.min.json?time=${Date.now}`,
-    })
-  }
+
   const repoPluginsRes = await Promise.allSettled(
     allRepositories.map(({ url }) => fetch(url).then(res => res.json())),
   );
@@ -144,11 +134,11 @@ const fetchPlugins = async (): Promise<PluginItem[]> => {
   return uniqBy(reverse(allPlugins), 'id');
 };
 
-const getPlugin = (pluginId: string) => {
+const getPlugin = async (pluginId: string) => {
   if (!plugins[pluginId]) {
     const filePath = `${PLUGIN_STORAGE}/${pluginId}/index.js`;
     try {
-      const code = FileManager.readFile(filePath);
+      const code = await FileManager.readFile(filePath);
       const plugin = initPlugin(pluginId, code);
       plugins[pluginId] = plugin;
     } catch {

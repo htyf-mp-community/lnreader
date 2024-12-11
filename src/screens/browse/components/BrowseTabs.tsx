@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, memo } from 'react';
+import React, { useCallback, useMemo, useState, memo, useEffect } from 'react';
 import {
   Pressable,
   Image,
@@ -28,6 +28,10 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { Portal } from 'react-native-paper';
+import SourceSettingsModal from './Modals/SourceSettings';
+import { useBoolean } from '@hooks';
+import { getPlugin } from '@plugins/pluginManager';
 
 interface AvailableTabProps {
   searchText: string;
@@ -50,6 +54,16 @@ export const InstalledTab = memo(
       updatePlugin,
     } = usePlugins();
     const { showMyAnimeList, showAniList } = useBrowseSettings();
+    const settingsModal = useBoolean();
+    const [selectedPluginId, setSelectedPluginId] = useState<string>('');
+    const [pluginSettings, setPluginSettings] = useState();
+
+    useEffect(() => {
+      (async () => {
+        setPluginSettings((await getPlugin(selectedPluginId))?.pluginSettings)
+      })()
+    }, [])
+
     const navigateToSource = useCallback(
       (plugin: PluginItem, showLatestNovels?: boolean) => {
         navigation.navigate('SourceScreen', {
@@ -159,6 +173,18 @@ export const InstalledTab = memo(
                 </View>
               </View>
               <View style={{ flex: 1 }} />
+              {item.hasSettings ? (
+                <IconButtonV2
+                  name="cog-outline"
+                  size={22}
+                  color={theme.primary}
+                  onPress={() => {
+                    setSelectedPluginId(item.id);
+                    settingsModal.setTrue();
+                  }}
+                  theme={theme}
+                />
+              ) : null}
               {item.hasUpdate || __DEV__ ? (
                 <IconButtonV2
                   name="download-outline"
@@ -242,6 +268,19 @@ export const InstalledTab = memo(
             >
               {getString('browseScreen.installedPlugins')}
             </Text>
+
+            <Portal>
+              {
+                pluginSettings ? <SourceSettingsModal
+                  visible={settingsModal.value}
+                  onDismiss={settingsModal.setFalse}
+                  title={getString('browseScreen.settings.title')}
+                  description={getString('browseScreen.settings.description')}
+                  pluginId={selectedPluginId}
+                  pluginSettings={pluginSettings}
+                /> : undefined
+              }
+            </Portal>
           </>
         }
       />
@@ -414,27 +453,37 @@ export const AvailableTab = memo(({ searchText, theme }: AvailableTabProps) => {
         />
       }
       ListEmptyComponent={
-        <View style={{ marginTop: 100 }}>
-          <EmptyView
-            icon="(･Д･。"
-            description=" No repositories yet. Add your first plugin repository to get
+        !filteredAvailablePlugins.length ? (
+          <View style={{ marginTop: 100 }}>
+            <EmptyView
+              icon="(･Д･。"
+              description=" No repositories yet. Add your first plugin repository to get
                 started."
-            actions={[
-              {
-                iconName: 'cog-outline',
-                title: 'Add Repository',
-                onPress: () =>
-                  navigation.navigate('MoreStack', {
-                    screen: 'SettingsStack',
-                    params: {
-                      screen: 'RespositorySettings',
-                    },
-                  }),
-              },
-            ]}
-            theme={theme}
-          />
-        </View>
+              actions={[
+                {
+                  iconName: 'cog-outline',
+                  title: 'Add Repository',
+                  onPress: () =>
+                    navigation.navigate('MoreStack', {
+                      screen: 'SettingsStack',
+                      params: {
+                        screen: 'RespositorySettings',
+                      },
+                    }),
+                },
+              ]}
+              theme={theme}
+            />
+          </View>
+        ) : (
+          <View style={{ marginTop: 100 }}>
+            <EmptyView
+              icon="(･Д･。"
+              description="No plugins available for this search term"
+              theme={theme}
+            />
+          </View>
+        )
       }
     />
   );

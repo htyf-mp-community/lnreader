@@ -51,7 +51,7 @@ const MigrationNovels = ({ navigation, route }: MigrateNovelScreenProps) => {
     filteredInstalledPlugins.map(async item => {
       if (isMounted.current === true) {
         try {
-          const source = getPlugin(item.id);
+          const source = await getPlugin(item.id);
           if (!source) {
             throw new Error(`Unknown plugin: ${item.id}`);
           }

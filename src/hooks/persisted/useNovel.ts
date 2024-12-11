@@ -58,6 +58,7 @@ const defaultPageIndex = 0;
 export const useTrackedNovel = (novelId: number) => {
   const [trackedNovel, setValue] = useMMKVObject<TrackedNovel>(
     `${TRACKED_NOVEL_PREFIX}_${novelId}`,
+    MMKVStorage,
   );
 
   const trackNovel = (tracker: TrackerMetadata, novel: SearchResult) => {
@@ -138,13 +139,15 @@ export const useNovel = (novelPath: string, pluginId: string) => {
   );
   const [pageIndex = defaultPageIndex, setPageIndex] = useMMKVNumber(`
     ${NOVEL_PAGE_INDEX_PREFIX}_${pluginId}_${novelPath}
-  `);
+  `, MMKVStorage);
   const [lastRead, setLastRead] = useMMKVObject<ChapterInfo>(
     `${LAST_READ_PREFIX}_${pluginId}_${novelPath}`,
+    MMKVStorage
   );
   const [novelSettings = defaultNovelSettings, setNovelSettings] =
     useMMKVObject<NovelSettings>(
       `${NOVEL_SETTINSG_PREFIX}_${pluginId}_${novelPath}`,
+      MMKVStorage
     );
 
   const { defaultChapterSort } = useAppSettings();
@@ -164,7 +167,7 @@ export const useNovel = (novelPath: string, pluginId: string) => {
         pages[pageIndex],
       ).then(chapters => setChapters(chapters));
     }
-  }, [novel, pageIndex]);
+  }, [novel, pageIndex, sort, novelSettings]);
 
   const sortAndFilterChapters = async (sort?: string, filter?: string) => {
     if (novel) {
@@ -350,6 +353,7 @@ export const useNovel = (novelPath: string, pluginId: string) => {
       setPages(['1']);
     }
     setNovel(novel);
+    setLoading(false);
   }, []);
 
   const getChapters = useCallback(async () => {
@@ -379,11 +383,12 @@ export const useNovel = (novelPath: string, pluginId: string) => {
       }
       setChapters(chapters);
     }
-    setLoading(false);
   }, [novel, novelSettings, pageIndex]);
+
   useEffect(() => {
     getNovel();
   }, []);
+
   useEffect(() => {
     getChapters().catch(e => showToast(e.message));
   }, [getChapters]);

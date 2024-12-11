@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View, Pressable, Text, ScrollView } from 'react-native';
 import { getString } from '@strings/translations';
 
@@ -10,11 +10,13 @@ import { MoreStackScreenProps } from '@navigators/types';
 import Switch from '@components/Switch/Switch';
 import { useMMKVObject } from 'react-native-mmkv';
 import ServiceManager, { BackgroundTask } from '@services/ServiceManager';
+import { MMKVStorage } from '@utils/mmkv/mmkv';
 
 const MoreScreen = ({ navigation }: MoreStackScreenProps) => {
   const theme = useTheme();
   const [taskQueue] = useMMKVObject<BackgroundTask[]>(
     ServiceManager.manager.STORE_KEY,
+    MMKVStorage
   );
   const {
     incognitoMode = false,
@@ -27,6 +29,23 @@ const MoreScreen = ({ navigation }: MoreStackScreenProps) => {
 
   const enableIncognitoMode = () =>
     setLibrarySettings({ incognitoMode: !incognitoMode });
+
+  useEffect(
+    () =>
+      navigation.addListener('tabPress', e => {
+        if (navigation.isFocused()) {
+          e.preventDefault();
+
+          navigation.navigate('MoreStack', {
+            screen: 'SettingsStack',
+            params: {
+              screen: 'Settings',
+            },
+          });
+        }
+      }),
+    [navigation],
+  );
 
   return (
     <ScrollView>

@@ -15,13 +15,14 @@ import { Appbar, List } from '@components';
 import { AppearanceSettingsScreenProps } from '@navigators/types';
 import { getString } from '@strings/translations';
 import { darkThemes, lightThemes } from '@theme/md3';
+import { MMKVStorage } from '@utils/mmkv/mmkv';
 
 const AppearanceSettings = ({ navigation }: AppearanceSettingsScreenProps) => {
   const theme = useTheme();
-  const [, setTheme] = useMMKVObject('APP_THEME');
+  const [, setTheme] = useMMKVObject('APP_THEME', MMKVStorage);
   const [isAmoledBlack = false, setAmoledBlack] =
-    useMMKVBoolean('AMOLED_BLACK');
-  const [, setCustomAccentColor] = useMMKVString('CUSTOM_ACCENT_COLOR');
+    useMMKVBoolean('AMOLED_BLACK', MMKVStorage);
+  const [, setCustomAccentColor] = useMMKVString('CUSTOM_ACCENT_COLOR', MMKVStorage);
 
   const {
     showHistoryTab,

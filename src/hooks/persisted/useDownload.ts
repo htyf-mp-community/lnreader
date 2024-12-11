@@ -1,5 +1,6 @@
 import { ChapterInfo, NovelInfo } from '@database/types';
 import ServiceManager, { BackgroundTask } from '@services/ServiceManager';
+import { MMKVStorage } from '@utils/mmkv/mmkv';
 import { useMemo } from 'react';
 import { useMMKVObject } from 'react-native-mmkv';
 
@@ -9,6 +10,7 @@ export const CHAPTER_DOWNLOADING = 'CHAPTER_DOWNLOADING';
 export default function useDownload() {
   const [queue] = useMMKVObject<BackgroundTask[]>(
     ServiceManager.manager.STORE_KEY,
+    MMKVStorage,
   );
   const downloadQueue = useMemo(
     () => queue?.filter(t => t.name === 'DOWNLOAD_CHAPTER') || [],

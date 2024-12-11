@@ -25,13 +25,13 @@ const defaultLang = languagesMapping[locale.split('-')[0]] || 'English';
 
 export default function usePlugins() {
   const [lastUsedPlugin, setLastUsedPlugin] =
-    useMMKVObject<PluginItem>(LAST_USED_PLUGIN);
+    useMMKVObject<PluginItem>(LAST_USED_PLUGIN, MMKVStorage);
   const [languagesFilter = [defaultLang], setLanguagesFilter] =
-    useMMKVObject<string[]>(LANGUAGES_FILTER);
+    useMMKVObject<string[]>(LANGUAGES_FILTER, MMKVStorage);
   const [filteredAvailablePlugins = [], setFilteredAvailablePlugins] =
-    useMMKVObject<PluginItem[]>(FILTERED_AVAILABLE_PLUGINS);
+    useMMKVObject<PluginItem[]>(FILTERED_AVAILABLE_PLUGINS, MMKVStorage);
   const [filteredInstalledPlugins = [], setFilteredInstalledPlugins] =
-    useMMKVObject<PluginItem[]>(FILTERED_INSTALLED_PLUGINS);
+    useMMKVObject<PluginItem[]>(FILTERED_INSTALLED_PLUGINS, MMKVStorage);
   /**
    * @param filter
    * We cant use the languagesFilter directly because it is updated only after component's lifecycle end.
@@ -108,6 +108,7 @@ export default function usePlugins() {
         const actualPlugin: PluginItem = {
           ...plugin,
           version: _plg.version,
+          hasSettings: !!_plg.pluginSettings,
         };
         // safe
         if (!installedPlugins.some(plg => plg.id === plugin.id)) {

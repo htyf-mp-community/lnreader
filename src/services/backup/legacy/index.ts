@@ -1,5 +1,5 @@
 import * as DocumentPicker from 'expo-document-picker';
-import * as Notifications from 'expo-notifications';
+// import * as Notifications from 'expo-notifications';
 import BackgroundService from 'react-native-background-actions';
 
 import { getPlugin } from '@plugins/pluginManager';
@@ -73,7 +73,7 @@ export const restoreBackup = async () => {
       for (let i = 0; BackgroundService.isRunning() && i < novels.length; i++) {
         try {
           if (BackgroundService.isRunning()) {
-            const plugin = getPlugin(novels[i].pluginId);
+            const plugin = await getPlugin(novels[i].pluginId);
             if (!plugin) {
               throw new Error(`No plugin found with id ${novels[i].pluginId}`);
             }
@@ -97,18 +97,18 @@ export const restoreBackup = async () => {
           errorString += e + '\n';
         }
       }
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: getString('backupScreen.legacy.libraryRestored'),
-          body:
-            getString('backupScreen.legacy.novelsRestored', {
-              num: restoredNovelsCount,
-            }) +
-            '\n' +
-            errorString,
-        },
-        trigger: null,
-      });
+      // await Notifications.scheduleNotificationAsync({
+      //   content: {
+      //     title: getString('backupScreen.legacy.libraryRestored'),
+      //     body:
+      //       getString('backupScreen.legacy.novelsRestored', {
+      //         num: restoredNovelsCount,
+      //       }) +
+      //       '\n' +
+      //       errorString,
+      //   },
+      //   trigger: null,
+      // });
       BackgroundService.stop();
     };
 
