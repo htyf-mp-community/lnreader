@@ -59,14 +59,14 @@ const AddRepositoryModal: React.FC<AddRepositoryModalProps> = ({
           <Button
             title={getString(isEditMode ? 'common.ok' : 'common.add')}
             onPress={async () => {
-              if (
-                !new RegExp(/https?:\/\/(.*)plugins\.min\.json/).test(
-                  repositoryUrl,
-                )
-              ) {
-                showToast('Repository URL is invalid');
-                return;
-              }
+              // if (
+              //   !new RegExp(/https?:\/\/(.*)plugins\.min\.json/).test(
+              //     repositoryUrl,
+              //   )
+              // ) {
+              //   showToast('Repository URL is invalid');
+              //   return;
+              // }
 
               if (await isRepoUrlDuplicate(repositoryUrl)) {
                 showToast('A respository with this url already exists!');
