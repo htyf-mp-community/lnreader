@@ -501,6 +501,21 @@ export const AvailableTab = memo(({ searchText, theme }: AvailableTabProps) => {
           </View>
         )
       }
+      ListFooterComponent={filteredAvailablePlugins.length ? <View>
+        <Button
+          title={`添加更多源`}
+          onPress={() => {
+            navigation.navigate('MoreStack', {
+              screen: 'SettingsStack',
+              params: {
+                screen: 'RespositorySettings',
+              },
+            })
+          }}
+        >
+          
+        </Button>
+      </View> : undefined}
     />
   );
 });
