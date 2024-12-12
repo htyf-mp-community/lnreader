@@ -25,7 +25,7 @@ type StorageData = {
 const WebviewScreen = ({ route, navigation }: WebviewScreenProps) => {
   const { name, url, pluginId, isNovel } = route.params;
   const [isSave, setIsSave] = useState(false);
-  const uri = resolveUrl(pluginId, url, isNovel);
+  const [uri, setUri] = useState('');
   const { bottom } = useSafeAreaInsets();
 
   const theme = useTheme();
@@ -76,6 +76,8 @@ const WebviewScreen = ({ route, navigation }: WebviewScreenProps) => {
 
   useEffect(() => {
     (async () => {
+      const _uri = await resolveUrl(pluginId, url, isNovel)
+      setUri(_uri);
       const _isSave = (await getPlugin(pluginId))?.webStorageUtilized;
       setIsSave(!!_isSave);
     })()

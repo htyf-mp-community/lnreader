@@ -17,6 +17,8 @@ import FileManager from '@native/FileManager';
 import { getRepositoriesFromDb } from '@database/queries/RepositoryQueries';
 import { showToast } from '@utils/showToast';
 import { PLUGIN_STORAGE } from '@utils/Storages';
+import { Alert } from 'react-native';
+import axios from 'axios';
 
 const packages: Record<string, any> = {
   'htmlparser2': { Parser },
@@ -28,6 +30,16 @@ const packages: Record<string, any> = {
   '@libs/isAbsoluteUrl': { isUrlAbsolute },
   '@libs/filterInputs': { FilterTypes },
   '@libs/defaultCover': { defaultCover },
+};
+
+const PromiseHelperAllSettled = (promises) => {
+  return Promise.all(promises.map(function (promise) {
+      return promise.then(function (value) {
+          return { status: 'fulfilled', value: value };
+      }).catch(function (reason) {
+          return { status: 'rejected', reason: reason };
+      });
+  }));
 };
 
 const initPlugin = (pluginId: string, rawCode: string) => {
@@ -76,7 +88,11 @@ const installPlugin = async (
 
       // save plugin code;
       const pluginDir = `${PLUGIN_STORAGE}/${plugin.id}`;
-      await FileManager.mkdir(pluginDir);
+      try {
+        await FileManager.mkdir(pluginDir);
+      } catch {
+
+      }
       const pluginPath = pluginDir + '/index.js';
       const customJSPath = pluginDir + '/custom.js';
       const customCSSPath = pluginDir + '/custom.css';
@@ -117,19 +133,35 @@ const updatePlugin = async (plugin: PluginItem) => {
 
 const fetchPlugins = async (): Promise<PluginItem[]> => {
   const allPlugins: PluginItem[] = [];
-  const allRepositories = await getRepositoriesFromDb();
-
-  const repoPluginsRes = await Promise.allSettled(
-    allRepositories.map(({ url }) => fetch(url).then(res => res.json())),
-  );
-
-  repoPluginsRes.forEach(repoPlugins => {
-    if (repoPlugins.status === 'fulfilled') {
-      allPlugins.push(...repoPlugins.value);
-    } else {
-      showToast(repoPlugins.reason.toString());
-    }
-  });
+  try {
+    const allRepositories = await getRepositoriesFromDb();
+    
+    const repoPluginsRes = await PromiseHelperAllSettled(
+      allRepositories.map(({ url }) => {
+        try {
+          return new Promise((resolve) => {
+            axios.get(url).then(res => {
+              const data = res.data
+              resolve(data)
+            })
+          })
+        } catch (error) {
+          Alert.alert('1', JSON.stringify(error))
+        }
+      }),
+    );
+    repoPluginsRes.forEach(repoPlugins => {
+      if (repoPlugins.status === 'fulfilled') {
+       
+        allPlugins.push(...repoPlugins.value);
+      } else {
+        Alert.alert('10', JSON.stringify(repoPlugins))
+        showToast(repoPlugins.reason.toString());
+      }
+    });
+  } catch (error) {
+    // Alert.alert('0', JSON.stringify(error))
+  }
 
   return uniqBy(reverse(allPlugins), 'id');
 };

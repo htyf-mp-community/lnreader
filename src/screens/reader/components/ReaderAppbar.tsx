@@ -8,6 +8,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { ThemeColors } from '@theme/types';
 import { bookmarkChapter } from '@database/queries/ChapterQueries';
 import { useChapterContext } from '../ChapterContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ReaderAppbarProps {
   theme: ThemeColors;
@@ -15,6 +16,7 @@ interface ReaderAppbarProps {
 }
 
 const ReaderAppbar = ({ goBack, theme }: ReaderAppbarProps) => {
+  const {top} = useSafeAreaInsets();
   const { chapter, novel } = useChapterContext();
   const [bookmarked, setBookmarked] = useState(chapter.bookmark);
   useEffect(() => {
@@ -27,7 +29,7 @@ const ReaderAppbar = ({ goBack, theme }: ReaderAppbarProps) => {
       style={[
         styles.container,
         {
-          paddingTop: (StatusBar.currentHeight || 0) + 8,
+          paddingTop: (top || 0) + 2,
           backgroundColor: color(theme.surface).alpha(0.9).string(),
         },
       ]}

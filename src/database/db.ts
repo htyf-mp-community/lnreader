@@ -15,7 +15,7 @@ import {createRepositoryTableQuery} from './tables/RepositoryTable';
 
 const dbName = 'lnreader.db';
 
-const db = SQLite.openDatabaseSync(dbName);
+export const db = SQLite.openDatabaseSync(dbName);
 
 export const createTables = async () => {
   await db.execAsync('PRAGMA foreign_keys = ON');

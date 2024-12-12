@@ -17,7 +17,7 @@ import {
 } from '@shopify/flash-list';
 import { coverPlaceholderColor } from '@theme/colors';
 import { ThemeColors } from '@theme/types';
-import { Swipeable } from 'react-native-gesture-handler';
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { getString } from '@strings/translations';
 import { BrowseScreenProps, MoreStackScreenProps } from '@navigators/types';
 import { Button, EmptyView, IconButtonV2 } from '@components';
@@ -121,6 +121,7 @@ export const InstalledTab = memo(
                     }}
                     theme={theme}
                   />
+                  
                 </View>
               );
             }}
@@ -206,6 +207,21 @@ export const InstalledTab = memo(
                 title={getString('browseScreen.latest')}
                 textColor={theme.primary}
                 onPress={() => navigateToSource(item, true)}
+              />
+              <IconButtonV2
+                name="delete"
+                size={22}
+                color={theme.primary}
+                onPress={() => {
+                  uninstallPlugin(item).then(() =>
+                    showToast(
+                      getString('browseScreen.uninstalledPlugin', {
+                        name: item.name,
+                      }),
+                    ),
+                  );
+                }}
+                theme={theme}
               />
             </Pressable>
           </Swipeable>

@@ -1,11 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Dimensions,
-  NativeEventEmitter,
-  NativeModules,
-  StatusBar,
-  View,
-} from 'react-native';
+import { NativeEventEmitter, NativeModules, StatusBar } from 'react-native';
 import WebView from 'react-native-webview';
 import color from 'color';
 
@@ -25,12 +19,9 @@ import {
 } from '@hooks/persisted/useSettings';
 import { getBatteryLevelSync } from 'react-native-device-info';
 import * as Speech from 'expo-speech';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { cssCode, jsCode, jsTextVibeCode } from './assets';
-import * as Clipboard from 'expo-clipboard';
-import { showToast } from '@utils/showToast';
 import { PLUGIN_STORAGE } from '@utils/Storages';
 import { useChapterContext } from '../ChapterContext';
+import * as htmlCoder from './assets/index';
 
 type WebViewPostEvent = {
   type: string;
@@ -58,17 +49,21 @@ const onLogMessage = (payload: { nativeEvent: { data: string } }) => {
   }
 };
 
-const WebViewReader: React.FC<WebViewReaderProps> = props => {
-  const {
-    html,
-    nextChapter,
-    webViewRef,
-    pageReader,
-    saveProgress,
-    onPress,
-    navigateChapter,
-  } = props;
-  const {top, bottom} = useSafeAreaInsets()
+const { RNDeviceInfo } = NativeModules;
+const deviceInfoEmitter = new NativeEventEmitter(RNDeviceInfo);
+
+const assetsUriPrefix = __DEV__
+  ? 'http://localhost:8081/assets'
+  : 'file:///android_asset';
+
+const WebViewReader: React.FC<WebViewReaderProps> = ({
+  html,
+  webViewRef,
+  nextChapter,
+  saveProgress,
+  onPress,
+  navigateChapter,
+}) => {
   const { novel, chapter } = useChapterContext();
   const theme = useTheme();
   const readerSettings = useMemo(
@@ -84,14 +79,15 @@ const WebViewReader: React.FC<WebViewReaderProps> = props => {
     [],
   );
   const batteryLevel = useMemo(getBatteryLevelSync, []);
-  const layoutHeight = Dimensions.get('window').height - top - bottom;
-  const layoutWidth = Dimensions.get('window').width;
   const [plugin, setPlugin] = useState<any>();
-  
   const pluginCustomJS = `file://${PLUGIN_STORAGE}/${plugin?.id}/custom.js`;
   const pluginCustomCSS = `file://${PLUGIN_STORAGE}/${plugin?.id}/custom.css`;
 
   useEffect(() => {
+    (async () => {
+      const _plugin = await getPlugin(novel?.pluginId);
+      setPlugin(_plugin);
+    })()
     const mmkvListener = MMKVStorage.addOnValueChangedListener(key => {
       switch (key) {
         case CHAPTER_READER_SETTINGS:
@@ -126,18 +122,10 @@ const WebViewReader: React.FC<WebViewReaderProps> = props => {
     };
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      const _plugin = await getPlugin(novel?.pluginId);
-      setPlugin(_plugin);
-    })()
-  }, [novel?.pluginId])
-
   return (
-    <View style={{flex: 1}}>
     <WebView
       ref={webViewRef}
-      style={{ backgroundColor: readerSettings.theme, width: layoutWidth }}
+      style={{ backgroundColor: readerSettings.theme }}
       allowFileAccess={true}
       originWhitelist={['*']}
       scalesPageToFit={true}
@@ -187,158 +175,102 @@ const WebViewReader: React.FC<WebViewReaderProps> = props => {
         body: plugin?.imageRequestInit?.body,
         html: `
         <!DOCTYPE html>
-                <html>
-                  <head>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-                    <link rel="stylesheet" href="${assetsUriPrefix}/css/index.css">
-                    <style>
-                    :root {
-                      --StatusBar-currentHeight: ${top+40};
-                      --readerSettings-theme: ${readerSettings.theme};
-                      --readerSettings-padding: ${readerSettings.padding}%;
-                      --readerSettings-textSize: ${readerSettings.textSize}px;
-                      --readerSettings-textColor: ${readerSettings.textColor};
-                      --readerSettings-textAlign: ${readerSettings.textAlign};
-                      --readerSettings-lineHeight: ${readerSettings.lineHeight};
-                      --readerSettings-fontFamily: ${readerSettings.fontFamily};
-                      --theme-primary: ${theme.primary};
-                      --theme-onPrimary: ${theme.onPrimary};
-                      --theme-secondary: ${theme.secondary};
-                      --theme-tertiary: ${theme.tertiary};
-                      --theme-onTertiary: ${theme.onTertiary};
-                      --theme-onSecondary: ${theme.onSecondary};
-                      --theme-surface: ${theme.surface};
-                      --theme-surface-0-9: ${color(theme.surface)
-                        .alpha(0.9)
-                        .toString()};
-                      --theme-onSurface: ${theme.onSurface};
-                      --theme-surfaceVariant: ${theme.surfaceVariant};
-                      --theme-onSurfaceVariant: ${theme.onSurfaceVariant};
-                      --theme-outline: ${theme.outline};
-                      --theme-rippleColor: ${theme.rippleColor};
-                      --chapterCtn-height: ${layoutHeight - 140};
-                      }
-                      
-                      @font-face {
-                        font-family: ${readerSettings.fontFamily};
-                        src: url("file:///android_asset/fonts/${
-                          readerSettings.fontFamily
-                        }.ttf");
-                      }
-                    </style>
-                    <style>${decodeURIComponent(cssCode)}</style>
-                      ${
-                        pageReader
-                          ? `
-                          <link rel="stylesheet" href="${assetsUriPrefix}/css/horizontal.css">
-                        `
-                          : ''
-                      }
-                    <link rel="stylesheet" href="${pluginCustomCSS}">
-                    <style>${readerSettings.customCSS}</style>
-                    <script>
-                      var initSettings = {
-                        showScrollPercentage: ${showScrollPercentage},
-                        swipeGestures: ${swipeGestures},
-                        showBatteryAndTime: ${showBatteryAndTime},
-                        verticalSeekbar: ${verticalSeekbar},
-                        bionicReading: ${bionicReading},
-                      }
-                      var batteryLevel = ${batteryLevel};
-                      var autoSaveInterval = 2222;
-                      var { NOVEL, CHAPTER } = ${JSON.stringify({
-                        NOVEL: novel,
-                        CHAPTER: chapter,
-                      })}
-                    </script>
-                  </head>
-                  <body>
-                    <div class="chapterCtn"> 
-                      <chapter 
-                        data-page-reader='${pageReader}'
-                        data-plugin-id='${novel.pluginId}'
-                        data-novel-id='${chapter.novelId}'
-                        data-chapter-id='${chapter.id}'
-                      >
-                      ${html}
-                      </chapter>
-                      <div class="hidden" id="ToolWrapper">
-                          <div id="TTS-Controller"></div>
-                          <div id="ScrollBar"></div>
-                      </div>
-                      <div id="Image-Modal">
-                        <img id="Image-Modal-img">
-                      </div>
-                      <div id="reader-footer-wrapper">
-                          <div id="reader-footer">
-                              <div id="reader-battery" class="reader-footer-item"></div>
-                              <div id="reader-percentage" class="reader-footer-item"></div>
-                              <div id="reader-time" class="reader-footer-item"></div>
-                          </div>
-                      </div>
-                    </div>
-                    ${
-                      !pageReader
-                        ? `
-                    <div class="infoText">
-                      ${getString(
-                        'readerScreen.finished',
-                      )}: ${chapter.name.trim()}
-                    </div>
-                    ${
-                      nextChapter
-                        ? `<button class="nextButton" onclick="reader.post({type:'next'})">
-                            ${getString('readerScreen.nextChapter', {
-                              name: nextChapter.name,
-                            })}
-                          </button>`
-                        : `<div class="infoText">
-                          ${getString('readerScreen.noNextChapter')}
-                        </div>`
-                    }`
-                        : ''
-                    }
-                    </body>
-                    <script>
-                    try {
-                      ${decodeURIComponent(jsTextVibeCode)}
-                    } catch (error) {
-                      alert(error)
-                    }
-                    </script>
-                    <script>
-                    try {
-                      ${decodeURIComponent(jsCode)}
-                    } catch (error) {
-                      alert(error)
-                    }
-                    </script>
-                    <script>
-                        // Debug
-                        console = new Object();
-                        console.log = function(log) {
-                         reader.post({"type": "console", "msg": log});
-                        };
-                        console.debug = console.log;
-                        console.info = console.log;
-                        console.warn = console.log;
-                        console.error = console.log;
-                    </script>
-                    <script src="${assetsUriPrefix}/js/text-vibe.js"></script>
-                    <script src="${assetsUriPrefix}/js/default.js"></script>
-                    <script src="${assetsUriPrefix}/js/horizontalScroll.js"></script>
-                    <script src="${assetsUriPrefix}/js/index.js"></script>
-                    <script src="${assetsUriPrefix}/js/setup.js"></script>
-                    <script src="${assetsUriPrefix}/js/horizontalScroll.js"></script>
-                    <script src="${pluginCustomJS}"></script>
-                    <script>
-                        setup(${chapter.progress},${readerSettings.customJS})
-                    </script>
-                </html>
-                `,
+          <html>
+            <head>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+              <style>
+                ${decodeURIComponent(htmlCoder.index_css)}
+              </style>
+              <style>
+              :root {
+                --StatusBar-currentHeight: ${StatusBar.currentHeight}px;
+                --readerSettings-theme: ${readerSettings.theme};
+                --readerSettings-padding: ${readerSettings.padding}px;
+                --readerSettings-textSize: ${readerSettings.textSize}px;
+                --readerSettings-textColor: ${readerSettings.textColor};
+                --readerSettings-textAlign: ${readerSettings.textAlign};
+                --readerSettings-lineHeight: ${readerSettings.lineHeight};
+                --readerSettings-fontFamily: ${readerSettings.fontFamily};
+                --theme-primary: ${theme.primary};
+                --theme-onPrimary: ${theme.onPrimary};
+                --theme-secondary: ${theme.secondary};
+                --theme-tertiary: ${theme.tertiary};
+                --theme-onTertiary: ${theme.onTertiary};
+                --theme-onSecondary: ${theme.onSecondary};
+                --theme-surface: ${theme.surface};
+                --theme-surface-0-9: ${color(theme.surface)
+                  .alpha(0.9)
+                  .toString()};
+                --theme-onSurface: ${theme.onSurface};
+                --theme-surfaceVariant: ${theme.surfaceVariant};
+                --theme-onSurfaceVariant: ${theme.onSurfaceVariant};
+                --theme-outline: ${theme.outline};
+                --theme-rippleColor: ${theme.rippleColor};
+                }
+                
+                @font-face {
+                  font-family: ${readerSettings.fontFamily};
+                  src: url("file:///android_asset/fonts/${
+                    readerSettings.fontFamily
+                  }.ttf");
+                }
+                </style>
+
+              <link rel="stylesheet" href="${pluginCustomCSS}">
+              <style>${readerSettings.customCSS}</style>
+            </head>
+            <body class="${
+              chapterGeneralSettings.pageReader ? 'page-reader' : ''
+            }">
+              <div id="LNReader-chapter">
+                ${html}  
+              </div>
+              <div id="reader-ui"></div>
+              </body>
+              <script>
+                var initialReaderConfig = ${JSON.stringify({
+                  readerSettings,
+                  chapterGeneralSettings,
+                  novel,
+                  chapter,
+                  nextChapter,
+                  batteryLevel,
+                  autoSaveInterval: 2222,
+                  DEBUG: __DEV__,
+                  strings: {
+                    finished: `${getString(
+                      'readerScreen.finished',
+                    )}: ${chapter.name.trim()}`,
+                    nextChapter: getString('readerScreen.nextChapter', {
+                      name: nextChapter?.name,
+                    }),
+                    noNextChapter: getString('readerScreen.noNextChapter'),
+                  },
+                })}
+              </script>
+              <script>
+                ${decodeURIComponent(htmlCoder.icons_js)}
+              </script>
+              <script>
+                ${decodeURIComponent(htmlCoder.van_js)}
+              </script>
+              <script>
+                ${decodeURIComponent(htmlCoder.text_vibe_js)}
+              </script>
+              <script>
+                ${decodeURIComponent(htmlCoder.core_js)}
+              </script>
+              <script>
+                ${decodeURIComponent(htmlCoder.index_js)}
+              </script>
+              <script src="${pluginCustomJS}"></script>
+              <script>
+                ${readerSettings.customJS}
+              </script>
+          </html>
+          `,
       }}
     />
-    </View>
   );
 };
 
