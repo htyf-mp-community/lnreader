@@ -1,6 +1,6 @@
 {
   "name": "lnreader",
-  "version": "2.0.37",
+  "version": "2.0.38",
   "private": true,
   "scripts": {
     "run:scripts": "node ./scripts/index.js",
@@ -180,7 +180,7 @@
     "react-native-device-info": "13.0.0",
     "react-native-document-picker": "9.3.1",
     "react-native-dotenv": "3.4.11",
-    "react-native-drawer": "^2.5.1",
+    "react-native-drawer": "2.5.1",
     "react-native-drawer-layout": "3.2.2",
     "react-native-error-boundary": "1.2.4",
     "react-native-fast-image": "8.6.3",
@@ -254,7 +254,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.25.2",
-    "@babel/plugin-transform-private-methods": "^7.25.9",
+    "@babel/plugin-transform-private-methods": "7.25.9",
     "@babel/runtime": "7.20.0",
     "@react-native/eslint-config": "0.72.2",
     "@react-native/metro-config": "0.72.12",
