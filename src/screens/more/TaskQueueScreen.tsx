@@ -14,7 +14,7 @@ import { showToast } from '../../utils/showToast';
 import { getString } from '@strings/translations';
 import { Appbar, EmptyView } from '@components';
 import { TaskQueueScreenProps } from '@navigators/types';
-import ServiceManager, { BackgroundTask } from '@services/ServiceManager';
+import ServiceManager, { QueuedBackgroundTask } from '@services/ServiceManager';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMMKVObject } from 'react-native-mmkv';
 import { MMKVStorage } from '@utils/mmkv/mmkv';
@@ -22,7 +22,7 @@ import { MMKVStorage } from '@utils/mmkv/mmkv';
 const DownloadQueue = ({ navigation }: TaskQueueScreenProps) => {
   const theme = useTheme();
   const { bottom } = useSafeAreaInsets();
-  const [taskQueue] = useMMKVObject<BackgroundTask[]>(
+  const [taskQueue] = useMMKVObject<QueuedBackgroundTask[]>(
     ServiceManager.manager.STORE_KEY,
     MMKVStorage,
   );
@@ -35,6 +35,8 @@ const DownloadQueue = ({ navigation }: TaskQueueScreenProps) => {
       setIsRunning(false);
     }
   }, [taskQueue]);
+
+  //TODO: there should probably be a way to cancel a specific task from this screen
 
   return (
     <>
@@ -73,15 +75,21 @@ const DownloadQueue = ({ navigation }: TaskQueueScreenProps) => {
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
         keyExtractor={(item, index) => 'task_' + index}
         data={taskQueue || []}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <View style={{ padding: 16 }}>
-            <Text style={{ color: theme.onSurface }}>
-              {item.name} - {ServiceManager.manager.getTaskDescription(item)}
-            </Text>
+            <Text style={{ color: theme.onSurface }}>{item.meta.name}</Text>
+            {item.meta.progressText ? (
+              <Text style={{ color: theme.onSurfaceVariant }}>
+                {item.meta.progressText}
+              </Text>
+            ) : null}
             <ProgressBar
-              indeterminate={taskQueue && taskQueue.length > 0 && index === 0}
+              indeterminate={
+                item.meta.isRunning && item.meta.progress === undefined
+              }
+              progress={item.meta.progress}
               color={theme.primary}
-              style={{ marginTop: 8 }}
+              style={{ marginTop: 8, backgroundColor: theme.surface2 }}
             />
           </View>
         )}
